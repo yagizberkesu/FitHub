@@ -4,6 +4,7 @@ using FitHub.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FitHub.Migrations
 {
     [DbContext(typeof(FitHubContext))]
-    partial class FitHubContextModelSnapshot : ModelSnapshot
+    [Migration("20251121204934_AddUye")]
+    partial class AddUye
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -54,55 +57,6 @@ namespace FitHub.Migrations
                     b.HasIndex("SalonId");
 
                     b.ToTable("Egitmenler");
-                });
-
-            modelBuilder.Entity("FitHub.Models.Randevu", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("EgitmenId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Hizmet")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("Onaylandi")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("Saat")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("SalonId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Sure")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("Tarih")
-                        .HasColumnType("datetime2");
-
-                    b.Property<decimal>("Ucret")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<int>("UyeId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("EgitmenId");
-
-                    b.HasIndex("SalonId");
-
-                    b.HasIndex("UyeId");
-
-                    b.ToTable("Randevular");
                 });
 
             modelBuilder.Entity("FitHub.Models.Salon", b =>
@@ -183,33 +137,6 @@ namespace FitHub.Migrations
                         .IsRequired();
 
                     b.Navigation("Salon");
-                });
-
-            modelBuilder.Entity("FitHub.Models.Randevu", b =>
-                {
-                    b.HasOne("FitHub.Models.Egitmen", "Egitmen")
-                        .WithMany()
-                        .HasForeignKey("EgitmenId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("FitHub.Models.Salon", "Salon")
-                        .WithMany()
-                        .HasForeignKey("SalonId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("FitHub.Models.Uye", "Uye")
-                        .WithMany()
-                        .HasForeignKey("UyeId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Egitmen");
-
-                    b.Navigation("Salon");
-
-                    b.Navigation("Uye");
                 });
 #pragma warning restore 612, 618
         }
