@@ -1,0 +1,38 @@
+﻿@model FitHub.Models.Uye
+
+@{
+    ViewData["Title"] = "Kayıt Ol";
+}
+
+<h2>Kayıt Ol</h2>
+<form asp-action="Register" method="post">
+    <div>
+        <label>Ad</label>
+        <input asp-for="Ad" />
+    </div>
+    <div>
+        <label>Soyad</label>
+        <input asp-for="Soyad" />
+    </div>
+    <div>
+        <label>Email</label>
+        <input asp-for="Email" type="email" />
+    </div>
+    <div>
+        <label>Şifre</label>
+        <input asp-for="Sifre" type="password" />
+    </div>
+    <div>
+        <label>Telefon</label>
+        <input asp-for="Telefon" />
+    </div>
+    <div>
+        <label>Doğum Tarihi</label>
+        <input asp-for="DogumTarihi" type="date" />
+    </div>
+    <div>
+        <label>Cinsiyet</label>
+        <input asp-for="Cinsiyet" />
+    </div>
+    <button type="submit">Kayıt Ol</button>
+</form>

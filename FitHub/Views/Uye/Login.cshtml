@@ -1,0 +1,18 @@
+﻿@model FitHub.Models.Uye
+
+@{
+    ViewData["Title"] = "Giriş Yap";
+}
+
+<h2>Giriş Yap</h2>
+<form asp-action="Login" method="post">
+    <div>
+        <label>Email</label>
+        <input asp-for="Email" type="email" />
+    </div>
+    <div>
+        <label>Şifre</label>
+        <input asp-for="Sifre" type="password" />
+    </div>
+    <button type="submit">Giriş Yap</button>
+</form>
