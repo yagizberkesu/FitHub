@@ -1,4 +1,11 @@
 ﻿<!DOCTYPE html>
+@{
+    var userRole = Context.Session.GetString("UserRole");
+}
+@if (userRole == "Admin")
+{
+    <li><a href="/Home/AdminPanel">Admin Paneli</a></li>
+}
 <html lang="en">
 <head>
     <meta charset="utf-8" />

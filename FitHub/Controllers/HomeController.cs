@@ -28,5 +28,13 @@ namespace FitHub.Controllers
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
+        // FitHub/Controllers/HomeController.cs
+        public IActionResult AdminPanel()
+        {
+            var userRole = HttpContext.Session.GetString("UserRole");
+            if (userRole != "Admin")
+                return RedirectToAction("Login", "Uye");
+            return View();
+        }
     }
 }
