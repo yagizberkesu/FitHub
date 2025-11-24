@@ -5,34 +5,59 @@
 }
 
 <h2>Kayıt Ol</h2>
+
 <form asp-action="Register" method="post">
-    <div>
-        <label>Ad</label>
-        <input asp-for="Ad" />
+    @Html.AntiForgeryToken()
+
+    <div asp-validation-summary="All" class="text-danger"></div>
+
+    <div class="mb-3">
+        <label asp-for="Ad" class="form-label"></label>
+        <input asp-for="Ad" class="form-control" />
+        <span asp-validation-for="Ad" class="text-danger"></span>
     </div>
-    <div>
-        <label>Soyad</label>
-        <input asp-for="Soyad" />
+
+    <div class="mb-3">
+        <label asp-for="Soyad" class="form-label"></label>
+        <input asp-for="Soyad" class="form-control" />
+        <span asp-validation-for="Soyad" class="text-danger"></span>
     </div>
-    <div>
-        <label>Email</label>
-        <input asp-for="Email" type="email" />
+
+    <div class="mb-3">
+        <label asp-for="Email" class="form-label"></label>
+        <input asp-for="Email" class="form-control" />
+        <span asp-validation-for="Email" class="text-danger"></span>
     </div>
-    <div>
-        <label>Şifre</label>
-        <input asp-for="Sifre" type="password" />
+
+    <div class="mb-3">
+        <label asp-for="Sifre" class="form-label"></label>
+        <input asp-for="Sifre" type="password" class="form-control" />
+        <span asp-validation-for="Sifre" class="text-danger"></span>
     </div>
-    <div>
-        <label>Telefon</label>
-        <input asp-for="Telefon" />
+
+    <div class="mb-3">
+        <label asp-for="Telefon" class="form-label"></label>
+        <input asp-for="Telefon" class="form-control" />
+        <span asp-validation-for="Telefon" class="text-danger"></span>
     </div>
-    <div>
-        <label>Doğum Tarihi</label>
-        <input asp-for="DogumTarihi" type="date" />
+
+    <div class="mb-3">
+        <label asp-for="DogumTarihi" class="form-label"></label>
+        <input asp-for="DogumTarihi" type="date" class="form-control" />
+        <span asp-validation-for="DogumTarihi" class="text-danger"></span>
     </div>
-    <div>
-        <label>Cinsiyet</label>
-        <input asp-for="Cinsiyet" />
+
+    <div class="mb-3">
+        <label asp-for="Cinsiyet" class="form-label"></label>
+        <input asp-for="Cinsiyet" class="form-control" />
+        <span asp-validation-for="Cinsiyet" class="text-danger"></span>
     </div>
-    <button type="submit">Kayıt Ol</button>
+
+    <button type="submit" class="btn btn-success">Kayıt Ol</button>
 </form>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

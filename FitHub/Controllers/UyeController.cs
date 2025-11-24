@@ -1,59 +1,96 @@
-﻿using FitHub.Models;
+using FitHub.Models;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-public class UyeController : Controller
+namespace FitHub.Controllers
 {
-    private readonly FitHubContext _context;
-    public UyeController(FitHubContext context) { _context = context; }
-
-    [HttpGet]
-    public IActionResult Register()
+    public class UyeController : Controller
     {
-        return View();
-    }
+        private readonly FitHubContext _context;
 
-    [HttpPost]
-    public async Task<IActionResult> Register(Uye uye)
-    {
-        if (ModelState.IsValid)
+        public UyeController(FitHubContext context)
         {
-            uye.Rol = "Uye"; // Varsayılan rol
+            _context = context;
+        }
+
+        [HttpGet]
+        public IActionResult Register()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Register(Uye uye)
+        {
+            ModelState.Remove(nameof(Uye.Rol));
+
+            if (!ModelState.IsValid)
+            {
+                return View(uye);
+            }
+
+            bool emailExists = await _context.Uyeler
+                .AnyAsync(u => u.Email == uye.Email);
+
+            if (emailExists)
+            {
+                ModelState.AddModelError("Email", "Bu e-posta adresi zaten kay�tl�.");
+                return View(uye);
+            }
+
+            if (string.IsNullOrEmpty(uye.Rol))
+            {
+                uye.Rol = "Uye";
+            }
+
             _context.Uyeler.Add(uye);
             await _context.SaveChangesAsync();
-            return RedirectToAction("Login");
+
+            return RedirectToAction(nameof(Login));
         }
-        return View(uye);
-    }
 
-    [HttpGet]
-    public IActionResult Login()
-    {
-        return View();
-    }
-
-    [HttpPost]
-    public async Task<IActionResult> Login(Uye uye)
-    {
-        var user = await _context.Uyeler
-            .FirstOrDefaultAsync(x => x.Email == uye.Email && x.Sifre == uye.Sifre);
-
-        if (user != null)
+        [HttpGet]
+        public IActionResult Login()
         {
-            // Basit oturum yönetimi (gerçek projede Identity kullanılır)
-            HttpContext.Session.SetString("UserEmail", user.Email);
-            HttpContext.Session.SetString("UserRole", user.Rol);
-
-            // Admin yetkilendirmesi örneği
-            if (user.Rol == "Admin")
-                return RedirectToAction("Index", "Home");
-            else
-                return RedirectToAction("Index", "Home"); // Üye için de ana sayfa
-
-            // Eğer farklı bir yönlendirme istiyorsan burada düzenleyebilirsin.
+            return View(new LoginViewModel());
         }
 
-        ModelState.AddModelError("", "Email veya şifre yanlış.");
-        return View(uye);
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Login(LoginViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            var user = await _context.Uyeler
+                .FirstOrDefaultAsync(u => u.Email == model.Email && u.Sifre == model.Sifre);
+
+            if (user == null)
+            {
+                ModelState.AddModelError(string.Empty, "E-posta veya �ifre hatal�.");
+                return View(model);
+            }
+
+            HttpContext.Session.SetInt32("UserId", user.Id);
+            HttpContext.Session.SetString("UserRole", user.Rol ?? "Uye");
+
+            if (user.Rol == "Admin")
+            {
+                return RedirectToAction("AdminPanel", "Home");
+            }
+
+            return RedirectToAction("Index", "Home");
+        }
+
+        [HttpGet]
+        public IActionResult Logout()
+        {
+            HttpContext.Session.Clear();
+            return RedirectToAction(nameof(Login));
+        }
     }
 }

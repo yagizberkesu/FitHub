@@ -1,28 +1,33 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
-using FitHub.Models;
+﻿@model FitHub.Models.LoginViewModel
 
-namespace FitHub.Pages.Uye
-{
-    public class LoginModel : PageModel
-    {
-        [BindProperty]
-        public LoginViewModel Input { get; set; }
+@{
+    ViewData["Title"] = "Giriş Yap";
+}
 
-        public void OnGet() { }
+<h2>Giriş Yap</h2>
 
-        public IActionResult OnPost()
-        {
-            if (!ModelState.IsValid)
-            {
-                return Page();
-            }
+<form asp-action="Login" method="post">
+    @Html.AntiForgeryToken()
 
-            // Giriş kontrolü burada yapılır
-            // Örnek: if (Input.Email == "test@test.com" && Input.Sifre == "1234") { ... }
+    <div asp-validation-summary="All" class="text-danger"></div>
 
-            // Başarılıysa yönlendirme:
-            return RedirectToPage("/Index");
-        }
+    <div class="mb-3">
+        <label asp-for="Email" class="form-label"></label>
+        <input asp-for="Email" class="form-control" />
+        <span asp-validation-for="Email" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Sifre" class="form-label"></label>
+        <input asp-for="Sifre" type="password" class="form-control" />
+        <span asp-validation-for="Sifre" class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Giriş</button>
+</form>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
 }

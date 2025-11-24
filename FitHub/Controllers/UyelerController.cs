@@ -1,12 +1,15 @@
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+﻿using System.Threading.Tasks;
 using FitHub.Models;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using FitHub.Filters;
 
 namespace FitHub.Controllers
 {
+    // Tüm action'lar otomatik olarak /Uye/ActionName şeklinde olacak
+    [Route("[controller]/[action]")]
+    [AdminAuthorize]
     public class UyelerController : Controller
     {
         private readonly FitHubContext _context;
@@ -16,113 +19,98 @@ namespace FitHub.Controllers
             _context = context;
         }
 
-        private bool IsAdmin()
+        // ===================== REGISTER =====================
+
+        [HttpGet]
+        public IActionResult Register()
         {
-            var role = HttpContext.Session.GetString("UserRole");
-            return role == "Admin";
+            return View();
         }
 
-        // GET: Uyeler
-        public async Task<IActionResult> Index()
-        {
-            if (!IsAdmin())
-                return RedirectToAction("Login", "Uye");
-
-            var uyeler = await _context.Uyeler.ToListAsync();
-            return View(uyeler);
-        }
-
-        // GET: Uyeler/Details/5
-        public async Task<IActionResult> Details(int? id)
-        {
-            if (!IsAdmin())
-                return RedirectToAction("Login", "Uye");
-
-            if (id == null) return NotFound();
-
-            var uye = await _context.Uyeler.FirstOrDefaultAsync(m => m.Id == id);
-            if (uye == null) return NotFound();
-
-            return View(uye);
-        }
-
-        // GET: Uyeler/Edit/5
-        public async Task<IActionResult> Edit(int? id)
-        {
-            if (!IsAdmin())
-                return RedirectToAction("Login", "Uye");
-
-            if (id == null) return NotFound();
-
-            var uye = await _context.Uyeler.FindAsync(id);
-            if (uye == null) return NotFound();
-
-            return View(uye);
-        }
-
-        // POST: Uyeler/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Ad,Soyad,Email,Sifre,Telefon,DogumTarihi,Cinsiyet,Rol")] Uye uye)
+        public async Task<IActionResult> Register(Uye uye)
         {
-            if (!IsAdmin())
-                return RedirectToAction("Login", "Uye");
+            // Rol formdan gelmediği için validation'dan çıkarıyoruz
+            ModelState.Remove(nameof(Uye.Rol));
 
-            if (id != uye.Id) return NotFound();
-
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                try
-                {
-                    _context.Update(uye);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!UyeExists(uye.Id))
-                        return NotFound();
-                    else
-                        throw;
-                }
-                return RedirectToAction(nameof(Index));
+                // Model valid değilse formu aynı modelle geri göster
+                return View(uye);
             }
-            return View(uye);
+
+            // Aynı e-posta ile daha önce kayıt olmuş mu?
+            bool emailExists = await _context.Uyeler
+                .AnyAsync(u => u.Email == uye.Email);
+
+            if (emailExists)
+            {
+                ModelState.AddModelError("Email", "Bu e-posta adresi zaten kayıtlı.");
+                return View(uye);
+            }
+
+            // Rol boşsa varsayılan "Uye" olsun
+            if (string.IsNullOrEmpty(uye.Rol))
+            {
+                uye.Rol = "Uye";
+            }
+
+            _context.Uyeler.Add(uye);
+            await _context.SaveChangesAsync();
+
+            // Kayıt başarılı → Login sayfasına yönlendir
+            return RedirectToAction(nameof(Login));
         }
 
-        // GET: Uyeler/Delete/5
-        public async Task<IActionResult> Delete(int? id)
+        // ======================= LOGIN =======================
+
+        [HttpGet]
+        public IActionResult Login()
         {
-            if (!IsAdmin())
-                return RedirectToAction("Login", "Uye");
-
-            if (id == null) return NotFound();
-
-            var uye = await _context.Uyeler.FirstOrDefaultAsync(m => m.Id == id);
-            if (uye == null) return NotFound();
-
-            return View(uye);
+            return View(new LoginViewModel());
         }
 
-        // POST: Uyeler/Delete/5
-        [HttpPost, ActionName("Delete")]
+        [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
+        public async Task<IActionResult> Login(LoginViewModel model)
         {
-            if (!IsAdmin())
-                return RedirectToAction("Login", "Uye");
-
-            var uye = await _context.Uyeler.FindAsync(id);
-            if (uye != null)
+            if (!ModelState.IsValid)
             {
-                _context.Uyeler.Remove(uye);
-                await _context.SaveChangesAsync();
+                // Sadece Email ve Sifre için hatalar gösterilecek
+                return View(model);
             }
-            return RedirectToAction(nameof(Index));
+
+            var user = await _context.Uyeler
+                .FirstOrDefaultAsync(u => u.Email == model.Email && u.Sifre == model.Sifre);
+
+            if (user == null)
+            {
+                // Hatalı giriş → ekranda kırmızı hata mesajı
+                ModelState.AddModelError(string.Empty, "E-posta veya şifre hatalı.");
+                return View(model);
+            }
+
+            // Session’a yaz
+            HttpContext.Session.SetInt32("UserId", user.Id);
+            HttpContext.Session.SetString("UserRole", user.Rol ?? "Uye");
+
+            // Admin ise admin panel, değilse ana sayfa
+            if (user.Rol == "Admin")
+            {
+                return RedirectToAction("AdminPanel", "Home");
+            }
+
+            return RedirectToAction("Index", "Home");
         }
 
-        private bool UyeExists(int id)
+        // ======================= LOGOUT ======================
+
+        [HttpGet]
+        public IActionResult Logout()
         {
-            return _context.Uyeler.Any(e => e.Id == id);
+            HttpContext.Session.Clear();
+            return RedirectToAction(nameof(Login));
         }
     }
 }

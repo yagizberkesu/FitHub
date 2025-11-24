@@ -10,6 +10,6 @@ namespace FitHub.Models
         public string Telefon { get; set; }
         public DateTime DogumTarihi { get; set; }
         public string Cinsiyet { get; set; }
-        public string Rol { get; set; } // "Admin" veya "Uye"
+        public string? Rol { get; set; } // "Admin" veya "Uye"
     }
 }

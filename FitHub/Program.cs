@@ -1,14 +1,13 @@
-using FitHub.Models;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Http; // For session extensions
+using Microsoft.AspNetCore.Http; // For session extensions  
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDbContext<FitHubContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
+ options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
 );
 
-// Add session services
+// Add session services  
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession(options =>
 {
@@ -18,7 +17,7 @@ builder.Services.AddSession(options =>
 });
 
 builder.Services.AddRazorPages();
-builder.Services.AddControllersWithViews(); // SADECE BURADA!
+builder.Services.AddControllersWithViews(); // No global filters, keep it simple  
 
 var app = builder.Build();
 
@@ -26,12 +25,12 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
 
-// Enable session middleware
+// Enable session middleware  
 app.UseSession();
 
 app.MapControllerRoute(
-    name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}");
+ name: "default",
+ pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.MapRazorPages();
 
