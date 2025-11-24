@@ -20,6 +20,5 @@ Amaç, spor salonlarının ve antrenörlerin yönetimi ile üyelerin randevu alm
 - Bootstrap 5, HTML5, CSS3, JavaScript
 - OpenAI API (Yapay Zeka entegrasyonu)
 
-## Kurulum
-1. Projeyi klonlayın:
+
    
