@@ -1,0 +1,40 @@
+@model FitHub.Models.Egitmen
+@{
+    ViewData["Title"] = "Eðitmen Düzenle";
+}
+
+<h1 class="mb-4">Eðitmen Düzenle</h1>
+<form asp-action="Edit" method="post" class="needs-validation" novalidate>
+    <input type="hidden" asp-for="Id" />
+    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+    <div class="mb-3">
+        <label asp-for="Ad" class="form-label"></label>
+        <input asp-for="Ad" class="form-control" />
+        <span asp-validation-for="Ad" class="text-danger"></span>
+    </div>
+    <div class="mb-3">
+        <label asp-for="UzmanlikAlanlari" class="form-label"></label>
+        <input asp-for="UzmanlikAlanlari" class="form-control" />
+        <span asp-validation-for="UzmanlikAlanlari" class="text-danger"></span>
+    </div>
+    <div class="mb-3">
+        <label asp-for="Hizmetler" class="form-label"></label>
+        <input asp-for="Hizmetler" class="form-control" />
+        <span asp-validation-for="Hizmetler" class="text-danger"></span>
+    </div>
+    <div class="mb-3">
+        <label asp-for="MusaitlikSaatleri" class="form-label"></label>
+        <input asp-for="MusaitlikSaatleri" class="form-control" />
+        <span asp-validation-for="MusaitlikSaatleri" class="text-danger"></span>
+    </div>
+    <div class="mb-3">
+        <label asp-for="SalonId" class="form-label"></label>
+        <select asp-for="SalonId" asp-items="ViewBag.SalonId" class="form-select"></select>
+        <span asp-validation-for="SalonId" class="text-danger"></span>
+    </div>
+    <button type="submit" class="btn btn-primary">Kaydet</button>
+    <a asp-action="Index" class="btn btn-secondary">Ýptal</a>
+</form>
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

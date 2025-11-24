@@ -1,0 +1,41 @@
+@model FitHub.Models.Randevu
+@{
+    ViewData["Title"] = "Randevu Detayý";
+}
+
+<h1 class="mb-4">Randevu Detayý</h1>
+<div class="card">
+    <div class="card-body">
+        <dl class="row">
+            <dt class="col-sm-3">Üye</dt>
+            <dd class="col-sm-9">@Model.Uye?.Ad</dd>
+            <dt class="col-sm-3">Eðitmen</dt>
+            <dd class="col-sm-9">@Model.Egitmen?.Ad</dd>
+            <dt class="col-sm-3">Salon</dt>
+            <dd class="col-sm-9">@Model.Salon?.Ad</dd>
+            <dt class="col-sm-3">Tarih</dt>
+            <dd class="col-sm-9">@Model.Tarih.ToShortDateString()</dd>
+            <dt class="col-sm-3">Saat</dt>
+            <dd class="col-sm-9">@Model.Saat</dd>
+            <dt class="col-sm-3">Hizmet</dt>
+            <dd class="col-sm-9">@Model.Hizmet</dd>
+            <dt class="col-sm-3">Süre (dk)</dt>
+            <dd class="col-sm-9">@Model.Sure</dd>
+            <dt class="col-sm-3">Ücret</dt>
+            <dd class="col-sm-9">@Model.Ucret.ToString("C")</dd>
+            <dt class="col-sm-3">Onaylandý</dt>
+            <dd class="col-sm-9">
+                @if (Model.Onaylandi)
+                {
+                    <span class="badge bg-success">Onaylandý</span>
+                }
+                else
+                {
+                    <span class="badge bg-warning text-dark">Bekliyor</span>
+                }
+            </dd>
+        </dl>
+        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">Düzenle</a>
+        <a asp-action="Index" class="btn btn-secondary">Listeye Dön</a>
+    </div>
+</div>

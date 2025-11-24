@@ -1,0 +1,59 @@
+@model FitHub.Models.Randevu
+@{
+    ViewData["Title"] = "Yeni Randevu Ekle";
+}
+
+<h1 class="mb-4">Yeni Randevu Ekle</h1>
+<form asp-action="Create" method="post" class="needs-validation" novalidate>
+    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+    <div class="mb-3">
+        <label asp-for="UyeId" class="form-label"></label>
+        <select asp-for="UyeId" asp-items="ViewBag.UyeId" class="form-select"></select>
+        <span asp-validation-for="UyeId" class="text-danger"></span>
+    </div>
+    <div class="mb-3">
+        <label asp-for="EgitmenId" class="form-label"></label>
+        <select asp-for="EgitmenId" asp-items="ViewBag.EgitmenId" class="form-select"></select>
+        <span asp-validation-for="EgitmenId" class="text-danger"></span>
+    </div>
+    <div class="mb-3">
+        <label asp-for="SalonId" class="form-label"></label>
+        <select asp-for="SalonId" asp-items="ViewBag.SalonId" class="form-select"></select>
+        <span asp-validation-for="SalonId" class="text-danger"></span>
+    </div>
+    <div class="mb-3">
+        <label asp-for="Tarih" class="form-label"></label>
+        <input asp-for="Tarih" class="form-control" type="date" />
+        <span asp-validation-for="Tarih" class="text-danger"></span>
+    </div>
+    <div class="mb-3">
+        <label asp-for="Saat" class="form-label"></label>
+        <input asp-for="Saat" class="form-control" />
+        <span asp-validation-for="Saat" class="text-danger"></span>
+    </div>
+    <div class="mb-3">
+        <label asp-for="Hizmet" class="form-label"></label>
+        <input asp-for="Hizmet" class="form-control" />
+        <span asp-validation-for="Hizmet" class="text-danger"></span>
+    </div>
+    <div class="mb-3">
+        <label asp-for="Sure" class="form-label"></label>
+        <input asp-for="Sure" class="form-control" type="number" />
+        <span asp-validation-for="Sure" class="text-danger"></span>
+    </div>
+    <div class="mb-3">
+        <label asp-for="Ucret" class="form-label"></label>
+        <input asp-for="Ucret" class="form-control" type="number" step="0.01" />
+        <span asp-validation-for="Ucret" class="text-danger"></span>
+    </div>
+    <div class="form-check mb-3">
+        <input asp-for="Onaylandi" class="form-check-input" />
+        <label asp-for="Onaylandi" class="form-check-label"></label>
+        <span asp-validation-for="Onaylandi" class="text-danger"></span>
+    </div>
+    <button type="submit" class="btn btn-primary">Kaydet</button>
+    <a asp-action="Index" class="btn btn-secondary">Ýptal</a>
+</form>
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
