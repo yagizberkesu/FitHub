@@ -1,4 +1,4 @@
-ï»¿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using FitHub.Models;
 
@@ -18,10 +18,10 @@ namespace FitHub.Pages.Uye
                 return Page();
             }
 
-            // GiriÅŸ kontrolÃ¼ burada yapÄ±lÄ±r
-            // Ã–rnek: if (Input.Email == "test@test.com" && Input.Sifre == "1234") { ... }
+            // Giriş kontrolü burada yapılır
+            // Örnek: if (Input.Email == "test@test.com" && Input.Sifre == "1234") { ... }
 
-            // BaÅŸarÄ±lÄ±ysa yÃ¶nlendirme:
+            // Başarılıysa yönlendirme:
             return RedirectToPage("/Index");
         }
     }
