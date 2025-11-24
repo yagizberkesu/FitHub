@@ -17,6 +17,7 @@ namespace FitHub.Models
         public int Sure { get; set; } // dakika cinsinden
         public decimal Ucret { get; set; }
         public bool Onaylandi { get; set; }
-        
+        // Durum: "Beklemede", "Onaylandı", "İptal"
+        public string Durum { get; set; } = "Beklemede";
     }
 }

@@ -1,6 +1,7 @@
 @model FitHub.Models.Randevu
 @{
     ViewData["Title"] = "Randevu Detayý";
+    var userRole = Context.Session.GetString("UserRole");
 }
 
 <h1 class="mb-4">Randevu Detayý</h1>
@@ -23,19 +24,32 @@
             <dd class="col-sm-9">@Model.Sure</dd>
             <dt class="col-sm-3">Ücret</dt>
             <dd class="col-sm-9">@Model.Ucret.ToString("C")</dd>
-            <dt class="col-sm-3">Onaylandý</dt>
+            <dt class="col-sm-3">Durum</dt>
             <dd class="col-sm-9">
-                @if (Model.Onaylandi)
+                @if (Model.Durum == "Onaylandý")
                 {
                     <span class="badge bg-success">Onaylandý</span>
                 }
+                else if (Model.Durum == "Ýptal")
+                {
+                    <span class="badge bg-danger">Ýptal</span>
+                }
                 else
                 {
-                    <span class="badge bg-warning text-dark">Bekliyor</span>
+                    <span class="badge bg-warning text-dark">Beklemede</span>
                 }
             </dd>
         </dl>
         <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">Düzenle</a>
         <a asp-action="Index" class="btn btn-secondary">Listeye Dön</a>
+        @if (userRole == "Admin" && Model.Durum == "Beklemede")
+        {
+            <form asp-action="Approve" method="post" asp-route-id="@Model.Id" style="display:inline">
+                <button type="submit" class="btn btn-success">Onayla</button>
+            </form>
+            <form asp-action="Cancel" method="post" asp-route-id="@Model.Id" style="display:inline">
+                <button type="submit" class="btn btn-danger">Ýptal</button>
+            </form>
+        }
     </div>
 </div>

@@ -1,0 +1,58 @@
+@model FitHub.Models.Uye
+@{
+    ViewData["Title"] = "Üye Düzenle";
+}
+
+<h1 class="mb-4">Üye Düzenle</h1>
+<form asp-action="Edit" method="post" class="needs-validation" novalidate>
+    <input type="hidden" asp-for="Id" />
+    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+    <div class="mb-3">
+        <label asp-for="Ad" class="form-label"></label>
+        <input asp-for="Ad" class="form-control" />
+        <span asp-validation-for="Ad" class="text-danger"></span>
+    </div>
+    <div class="mb-3">
+        <label asp-for="Soyad" class="form-label"></label>
+        <input asp-for="Soyad" class="form-control" />
+        <span asp-validation-for="Soyad" class="text-danger"></span>
+    </div>
+    <div class="mb-3">
+        <label asp-for="Email" class="form-label"></label>
+        <input asp-for="Email" class="form-control" />
+        <span asp-validation-for="Email" class="text-danger"></span>
+    </div>
+    <div class="mb-3">
+        <label asp-for="Sifre" class="form-label"></label>
+        <input asp-for="Sifre" class="form-control" type="password" />
+        <span asp-validation-for="Sifre" class="text-danger"></span>
+    </div>
+    <div class="mb-3">
+        <label asp-for="Telefon" class="form-label"></label>
+        <input asp-for="Telefon" class="form-control" />
+        <span asp-validation-for="Telefon" class="text-danger"></span>
+    </div>
+    <div class="mb-3">
+        <label asp-for="DogumTarihi" class="form-label"></label>
+        <input asp-for="DogumTarihi" class="form-control" type="date" />
+        <span asp-validation-for="DogumTarihi" class="text-danger"></span>
+    </div>
+    <div class="mb-3">
+        <label asp-for="Cinsiyet" class="form-label"></label>
+        <input asp-for="Cinsiyet" class="form-control" />
+        <span asp-validation-for="Cinsiyet" class="text-danger"></span>
+    </div>
+    <div class="mb-3">
+        <label asp-for="Rol" class="form-label"></label>
+        <select asp-for="Rol" class="form-select">
+            <option value="Uye" selected="@Model.Rol == \"Uye\"">Üye</option>
+            <option value="Admin" selected="@Model.Rol == \"Admin\"">Admin</option>
+        </select>
+        <span asp-validation-for="Rol" class="text-danger"></span>
+    </div>
+    <button type="submit" class="btn btn-primary">Kaydet</button>
+    <a asp-action="Index" class="btn btn-secondary">Ýptal</a>
+</form>
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

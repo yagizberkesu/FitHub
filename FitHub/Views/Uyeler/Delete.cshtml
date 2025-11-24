@@ -1,0 +1,30 @@
+@model FitHub.Models.Uye
+@{
+    ViewData["Title"] = "Üye Sil";
+}
+
+<h1 class="mb-4">Üye Sil</h1>
+<div class="alert alert-danger">
+    <strong>Bu üyeyi silmek istediðinizden emin misiniz?</strong>
+</div>
+<div class="card mb-3">
+    <div class="card-body">
+        <dl class="row">
+            <dt class="col-sm-3">Id</dt>
+            <dd class="col-sm-9">@Model.Id</dd>
+            <dt class="col-sm-3">Ad</dt>
+            <dd class="col-sm-9">@Model.Ad</dd>
+            <dt class="col-sm-3">Soyad</dt>
+            <dd class="col-sm-9">@Model.Soyad</dd>
+            <dt class="col-sm-3">Email</dt>
+            <dd class="col-sm-9">@Model.Email</dd>
+            <dt class="col-sm-3">Rol</dt>
+            <dd class="col-sm-9">@Model.Rol</dd>
+        </dl>
+        <form asp-action="Delete" method="post">
+            <input type="hidden" asp-for="Id" />
+            <button type="submit" class="btn btn-danger">Sil</button>
+            <a asp-action="Index" class="btn btn-secondary">Ýptal</a>
+        </form>
+    </div>
+</div>

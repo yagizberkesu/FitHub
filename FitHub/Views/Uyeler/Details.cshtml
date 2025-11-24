@@ -1,0 +1,30 @@
+@model FitHub.Models.Uye
+@{
+    ViewData["Title"] = "Üye Detayý";
+}
+
+<h1 class="mb-4">Üye Detayý</h1>
+<div class="card">
+    <div class="card-body">
+        <dl class="row">
+            <dt class="col-sm-3">Id</dt>
+            <dd class="col-sm-9">@Model.Id</dd>
+            <dt class="col-sm-3">Ad</dt>
+            <dd class="col-sm-9">@Model.Ad</dd>
+            <dt class="col-sm-3">Soyad</dt>
+            <dd class="col-sm-9">@Model.Soyad</dd>
+            <dt class="col-sm-3">Email</dt>
+            <dd class="col-sm-9">@Model.Email</dd>
+            <dt class="col-sm-3">Telefon</dt>
+            <dd class="col-sm-9">@Model.Telefon</dd>
+            <dt class="col-sm-3">Doðum Tarihi</dt>
+            <dd class="col-sm-9">@Model.DogumTarihi.ToShortDateString()</dd>
+            <dt class="col-sm-3">Cinsiyet</dt>
+            <dd class="col-sm-9">@Model.Cinsiyet</dd>
+            <dt class="col-sm-3">Rol</dt>
+            <dd class="col-sm-9">@Model.Rol</dd>
+        </dl>
+        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">Düzenle</a>
+        <a asp-action="Index" class="btn btn-secondary">Listeye Dön</a>
+    </div>
+</div>

@@ -1,6 +1,7 @@
 @model IEnumerable<FitHub.Models.Randevu>
 @{
     ViewData["Title"] = "Randevular";
+    var userRole = Context.Session.GetString("UserRole");
 }
 
 <h1 class="mb-4">Randevular</h1>
@@ -16,7 +17,7 @@
             <th>Hizmet</th>
             <th>Süre (dk)</th>
             <th>Ücret</th>
-            <th>Onaylandý</th>
+            <th>Durum</th>
             <th></th>
         </tr>
     </thead>
@@ -33,19 +34,32 @@
         <td>@item.Sure</td>
         <td>@item.Ucret.ToString("C")</td>
         <td>
-            @if (item.Onaylandi)
+            @if (item.Durum == "Onaylandý")
             {
                 <span class="badge bg-success">Onaylandý</span>
             }
+            else if (item.Durum == "Ýptal")
+            {
+                <span class="badge bg-danger">Ýptal</span>
+            }
             else
             {
-                <span class="badge bg-warning text-dark">Bekliyor</span>
+                <span class="badge bg-warning text-dark">Beklemede</span>
             }
         </td>
         <td>
             <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-info btn-sm">Detay</a>
             <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-warning btn-sm">Düzenle</a>
             <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-danger btn-sm">Sil</a>
+            @if (userRole == "Admin" && item.Durum == "Beklemede")
+            {
+                <form asp-action="Approve" method="post" asp-route-id="@item.Id" style="display:inline">
+                    <button type="submit" class="btn btn-success btn-sm">Onayla</button>
+                </form>
+                <form asp-action="Cancel" method="post" asp-route-id="@item.Id" style="display:inline">
+                    <button type="submit" class="btn btn-danger btn-sm">Ýptal</button>
+                </form>
+            }
         </td>
     </tr>
 }
