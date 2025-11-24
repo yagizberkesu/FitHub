@@ -16,21 +16,28 @@
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
+                @using Microsoft.AspNetCore.Http
+                @{
+                    string userRole = null;
+                    if (Context?.Session != null)
+                    {
+                        userRole = Context.Session.GetString("UserRole");
+                    }
+                }
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                     <li class="nav-item">
                         <a class="nav-link" href="/">Ana Sayfa</a>
                     </li>
-                    @* Admin rolü için özel menü *@
-                    @{
-                        var userRole = Context.Session.GetString("UserRole");
-                    }
                     @if (userRole == "Admin")
                     {
                         <li class="nav-item">
-                            <a class="nav-link" href="/Home/AdminPanel">Admin Paneli</a>
+                            <a class="nav-link" asp-controller="Home" asp-action="AdminPanel">Admin Paneli</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" href="/Uyeler/Index">Üyeler</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/Egitmenler/Index">Eğitmenler</a>
                         </li>
                     }
                 </ul>
