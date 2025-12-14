@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Http; // For session extensions  
+using Microsoft.AspNetCore.Http;
+using FitHub.Models; // For session extensions  
 
 var builder = WebApplication.CreateBuilder(args);
 
