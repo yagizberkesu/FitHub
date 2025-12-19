@@ -8,7 +8,7 @@ builder.Services.AddDbContext<FitHubContext>(options =>
  options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
 );
 
-// Add session services  and configure session options.
+// Add session services  and configure session options..
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession(options =>
 {
