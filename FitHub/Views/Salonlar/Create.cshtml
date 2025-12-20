@@ -3,51 +3,91 @@
     ViewData["Title"] = "Yeni Salon Ekle";
 }
 
+<style>
+    .form-control, .form-select {
+        background-color: #2c2c2c;
+        border: 1px solid #444;
+        color: #fff;
+    }
+    .form-control:focus, .form-select:focus {
+        background-color: #333;
+        color: #fff;
+        border-color: #ffc107;
+        box-shadow: 0 0 0 0.25rem rgba(255, 193, 7, 0.25);
+    }
+    option { background-color: #222; }
+</style>
+
 <div class="container py-5">
     <div class="row justify-content-center">
         <div class="col-lg-8">
             <div class="card bg-card border-0 shadow-lg">
                 <div class="card-header bg-transparent border-bottom border-secondary py-3">
-                    <h3 class="fw-bold text-white mb-0"><i class="fas fa-building text-warning me-2"></i>Yeni Salon Ekle</h3>
+                    <h3 class="fw-bold text-white mb-0">
+                        <i class="fas fa-building text-warning me-2"></i>Yeni Salon Tanımla
+                    </h3>
                 </div>
                 <div class="card-body p-4">
                     <form asp-action="Create">
-                        <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger mb-4"></div>
 
                         <div class="mb-4">
                             <label asp-for="Ad" class="form-label text-muted small">Salon Adı</label>
-                            <input asp-for="Ad" class="form-control" placeholder="Örn: FitHub Merkez Şube" />
+                            <input asp-for="Ad" class="form-control" placeholder="Örn: Merkez Şube" />
                             <span asp-validation-for="Ad" class="text-danger small"></span>
                         </div>
 
                         <div class="row g-3 mb-4">
                             <div class="col-md-6">
-                                <label asp-for="CalismaBaslangic" class="form-label text-muted small">Açılış Saati</label>
-                                <input asp-for="CalismaBaslangic" type="time" class="form-control" />
+                                <label class="form-label text-muted small">Açılış Saati</label>
+                                <div class="d-flex gap-2">
+                                    <select class="form-select time-part" id="baslangic_saat" data-target="CalismaBaslangic">
+                                        @for (int i = 6; i <= 23; i++)
+                                        {
+                                                <option value="@i.ToString("00")">@i.ToString("00")</option>
+                                        }
+                                    </select>
+                                    <span class="text-white align-self-center">:</span>
+
+                                    <select class="form-select time-part" id="baslangic_dakika" data-target="CalismaBaslangic">
+                                        <option value="00">00</option>
+                                        <option value="30">30</option>
+                                    </select>
+                                </div>
+                                <input type="hidden" asp-for="CalismaBaslangic" id="CalismaBaslangic" value="06:00" />
                                 <span asp-validation-for="CalismaBaslangic" class="text-danger small"></span>
                             </div>
+
                             <div class="col-md-6">
-                                <label asp-for="CalismaBitis" class="form-label text-muted small">Kapanış Saati</label>
-                                <input asp-for="CalismaBitis" type="time" class="form-control" />
+                                <label class="form-label text-muted small">Kapanış Saati</label>
+                                <div class="d-flex gap-2">
+                                    <select class="form-select time-part" id="bitis_saat" data-target="CalismaBitis">
+                                        @for (int i = 6; i <= 23; i++)
+                                        {
+                                                <option value="@i.ToString("00")" selected="@(i==22 ? "selected" : null)">@i.ToString("00")</option>
+                                        }
+                                    </select>
+                                    <span class="text-white align-self-center">:</span>
+
+                                    <select class="form-select time-part" id="bitis_dakika" data-target="CalismaBitis">
+                                        <option value="00">00</option>
+                                        <option value="30">30</option>
+                                    </select>
+                                </div>
+                                <input type="hidden" asp-for="CalismaBitis" id="CalismaBitis" value="22:00" />
                                 <span asp-validation-for="CalismaBitis" class="text-danger small"></span>
                             </div>
                         </div>
 
                         <div class="mb-4">
                             <label asp-for="Kontenjan" class="form-label text-muted small">Anlık Kapasite (Kişi)</label>
-                            <input asp-for="Kontenjan" type="number" class="form-control" />
+                            <input asp-for="Kontenjan" type="number" class="form-control" placeholder="Örn: 50" />
                             <span asp-validation-for="Kontenjan" class="text-danger small"></span>
                         </div>
 
-                        <div class="mb-4">
-                            <label asp-for="Hizmetler" class="form-label text-muted small">Hizmetler (Metin Olarak)</label>
-                            <textarea asp-for="Hizmetler" class="form-control" rows="3" placeholder="Fitness, Havuz, Sauna vb."></textarea>
-                            <span asp-validation-for="Hizmetler" class="text-danger small"></span>
-                        </div>
-
                         <div class="d-flex justify-content-between pt-3 border-top border-secondary">
-                            <a asp-action="Index" class="btn btn-outline-light px-4">Geri Dön</a>
-                            <button type="submit" class="btn btn-accent px-5 fw-bold shadow">KAYDET</button>
+                            <a asp-action="Index" class="btn btn-outline-light px-4">Listeye Dön</a>
+                            <button type="submit" class="btn btn-warning px-5 fw-bold shadow">KAYDET</button>
                         </div>
                     </form>
                 </div>
@@ -56,6 +96,16 @@
     </div>
 </div>
 
-@section Scripts {
- <partial name="_ValidationScriptsPartial" />
- }
+@section Scripts { 
+        <partial name="_ValidationScriptsPartial" /> 
+        <script>
+            // Saat veya Dakika değiştiğinde gizli inputu güncelle (HH:mm formatında)
+            $('.time-part').change(function() {
+                var targetId = $(this).data('target');
+                var prefix = targetId === 'CalismaBaslangic' ? 'baslangic' : 'bitis';
+                var saat = $('#' + prefix + '_saat').val();
+                var dakika = $('#' + prefix + '_dakika').val();
+                $('#' + targetId).val(saat + ':' + dakika);
+            });
+        </script>
+}

@@ -3,16 +3,37 @@
     ViewData["Title"] = "Yeni Eðitmen";
 }
 
+<style>
+    .form-control, .form-select {
+        background-color: #2c2c2c;
+        border: 1px solid #444;
+        color: #fff;
+    }
+    .form-control:focus, .form-select:focus {
+        background-color: #333;
+        color: #fff;
+        border-color: #ffc107;
+        box-shadow: 0 0 0 0.25rem rgba(255, 193, 7, 0.25);
+    }
+    .form-check-input:checked {
+        background-color: #ffc107;
+        border-color: #ffc107;
+    }
+    option { background-color: #222; }
+</style>
+
 <div class="container py-5">
     <div class="row justify-content-center">
         <div class="col-lg-8">
             <div class="card bg-card border-0 shadow-lg">
                 <div class="card-header bg-transparent border-bottom border-secondary py-3">
-                    <h3 class="fw-bold text-white mb-0"><i class="fas fa-user-ninja text-warning me-2"></i>Yeni Eðitmen Tanýmla</h3>
+                    <h3 class="fw-bold text-white mb-0">
+                        <i class="fas fa-user-ninja text-warning me-2"></i>Yeni Eðitmen Tanýmla
+                    </h3>
                 </div>
                 <div class="card-body p-4">
                     <form asp-action="Create">
-                        <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger mb-3"></div>
 
                         <div class="row g-3 mb-4">
                             <div class="col-md-6">
@@ -34,13 +55,40 @@
 
                         <div class="row g-3 mb-4">
                             <div class="col-md-6">
-                                <label asp-for="MusaitlikBaslangic" class="form-label text-muted small">Mesai Baþlangýç</label>
-                                <input asp-for="MusaitlikBaslangic" type="time" class="form-control" />
+                                <label class="form-label text-muted small">Mesai Baþlangýç</label>
+                                <div class="d-flex gap-2">
+                                    <select class="form-select time-part" id="start_saat" data-target="MusaitlikBaslangic">
+                                        @for (int i = 7; i <= 22; i++)
+                                        {
+                                                <option value="@i.ToString("00")" selected="@(i==9 ? "selected" : null)">@i.ToString("00")</option>
+                                        }
+                                    </select>
+                                    <span class="text-white align-self-center">:</span>
+                                    <select class="form-select time-part" id="start_dakika" data-target="MusaitlikBaslangic">
+                                        <option value="00">00</option>
+                                        <option value="30">30</option>
+                                    </select>
+                                </div>
+                                <input type="hidden" asp-for="MusaitlikBaslangic" id="MusaitlikBaslangic" value="09:00" />
                                 <span asp-validation-for="MusaitlikBaslangic" class="text-danger small"></span>
                             </div>
+
                             <div class="col-md-6">
-                                <label asp-for="MusaitlikBitis" class="form-label text-muted small">Mesai Bitiþ</label>
-                                <input asp-for="MusaitlikBitis" type="time" class="form-control" />
+                                <label class="form-label text-muted small">Mesai Bitiþ</label>
+                                <div class="d-flex gap-2">
+                                    <select class="form-select time-part" id="end_saat" data-target="MusaitlikBitis">
+                                        @for (int i = 7; i <= 22; i++)
+                                        {
+                                                <option value="@i.ToString("00")" selected="@(i==18 ? "selected" : null)">@i.ToString("00")</option>
+                                        }
+                                    </select>
+                                    <span class="text-white align-self-center">:</span>
+                                    <select class="form-select time-part" id="end_dakika" data-target="MusaitlikBitis">
+                                        <option value="00">00</option>
+                                        <option value="30">30</option>
+                                    </select>
+                                </div>
+                                <input type="hidden" asp-for="MusaitlikBitis" id="MusaitlikBitis" value="18:00" />
                                 <span asp-validation-for="MusaitlikBitis" class="text-danger small"></span>
                             </div>
                         </div>
@@ -65,14 +113,14 @@
                         }
                         else
                         {
-                                <div class="alert alert-warning small">
+                                <div class="alert alert-warning small border-0 bg-opacity-10 bg-warning text-warning">
                                     <i class="fas fa-exclamation-triangle me-2"></i>Önce sisteme hizmet eklemelisiniz.
                                 </div>
                         }
 
                         <div class="d-flex justify-content-between pt-3 border-top border-secondary">
                             <a asp-action="Index" class="btn btn-outline-light px-4">Geri Dön</a>
-                            <button type="submit" class="btn btn-accent px-5 fw-bold shadow">KAYDET</button>
+                            <button type="submit" class="btn btn-warning px-5 fw-bold shadow">KAYDET</button>
                         </div>
                     </form>
                 </div>
@@ -81,6 +129,20 @@
     </div>
 </div>
 
-@section Scripts {
- <partial name="_ValidationScriptsPartial" />
- }
+@section Scripts { 
+        <partial name="_ValidationScriptsPartial" /> 
+        <script>
+            // Saat seçimlerini gizli input'a aktar
+            $('.time-part').change(function() {
+                var targetId = $(this).data('target');
+
+                // Hedef 'MusaitlikBaslangic' ise prefix 'start', deðilse 'end'
+                var prefix = targetId === 'MusaitlikBaslangic' ? 'start' : 'end';
+
+                var saat = $('#' + prefix + '_saat').val();
+                var dakika = $('#' + prefix + '_dakika').val();
+
+                $('#' + targetId).val(saat + ':' + dakika);
+            });
+        </script>
+}

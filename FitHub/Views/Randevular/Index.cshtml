@@ -1,27 +1,33 @@
 @model IEnumerable<FitHub.Models.Randevu>
 @{
-    ViewData["Title"] = "Randevularým";
-    var userRole = Context.Session.GetString("UserRole") ?? "";
-    var isAdmin = string.Equals(userRole, "Admin", StringComparison.OrdinalIgnoreCase);
+    ViewData["Title"] = "Randevular";
+    // Yönetici mi kontrolü (Layout'taki mantýkla ayný)
+    var userRole = Context.Session.GetString("UserRole");
+    bool isAdmin = string.Equals(userRole, "Admin", StringComparison.OrdinalIgnoreCase);
 }
 
-<div class="container py-4">
+<div class="container py-5">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h2 class="fw-bold text-white mb-0">@(isAdmin ? "Tüm Randevular" : "Randevularým")</h2>
-            <p class="text-muted small">Geçmiþ ve yaklaþan antrenman takvimin.</p>
+            <h2 class="fw-bold text-white mb-0">
+                <i class="fas fa-calendar-alt text-warning me-2"></i>Randevular
+            </h2>
+            <p class="text-muted small">
+                @(isAdmin ? "Sistemdeki tüm randevularýn listesi." : "Planlanmýþ antrenmanlarýn.")
+            </p>
         </div>
-        <a asp-action="Create" class="btn btn-accent btn-lg shadow">
+        <a asp-action="Create" class="btn btn-warning fw-bold shadow">
             <i class="fas fa-plus me-2"></i>Yeni Randevu
         </a>
     </div>
 
     @if (!Model.Any())
     {
-            <div class="text-center py-5">
-                <i class="fas fa-calendar-times fa-4x text-muted mb-3 opacity-25"></i>
-                <h4 class="text-white">Henüz bir randevu yok.</h4>
-                <p class="text-muted">Hemen "Yeni Randevu" butonuna týklayarak antrenmanýný planla.</p>
+            <div class="text-center py-5 border border-secondary rounded bg-card bg-opacity-50">
+                <i class="far fa-calendar-times fa-4x text-muted mb-3 opacity-50"></i>
+                <h4 class="text-white">Henüz randevu kaydý yok.</h4>
+                <p class="text-muted">Hemen bir antrenman planlayýn!</p>
+                <a asp-action="Create" class="btn btn-outline-warning mt-2">Randevu Al</a>
             </div>
     }
     else
@@ -31,10 +37,9 @@
                     <table class="table table-dark table-hover mb-0 align-middle">
                         <thead>
                             <tr class="text-secondary text-uppercase small" style="background-color: #1a1a1a;">
-                                <th class="py-3 ps-4">Üye / Eðitmen</th>
-                                <th>Salon & Hizmet</th>
-                                <th>Tarih & Saat</th>
-                                <th>Süre</th>
+                                <th class="ps-4 py-3">Tarih / Saat</th>
+                                <th>Hizmet</th>
+                                <th>Salon & Eðitmen</th>
                                 <th>Ücret</th>
                                 <th>Durum</th>
                                 <th class="text-end pe-4">Ýþlemler</th>
@@ -45,63 +50,45 @@
                         {
                                     <tr>
                                         <td class="ps-4">
-                                            <div class="d-flex align-items-center">
-                                                <div class="bg-dark rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
-                                                    <i class="fas fa-user text-warning"></i>
-                                                </div>
-                                                <div>
-                                            @if (isAdmin)
-                                            {
-                                                            <div class="fw-bold text-white">@(item.Uye?.Ad ?? "-") @(item.Uye?.Soyad ?? "-")</div>
-                                                            <div class="small text-muted">Eðitmen: @(item.Egitmen?.Ad ?? "-")</div>
-                                            }
-                                            else
-                                            {
-                                                            <div class="fw-bold text-white">@(item.Egitmen?.Ad ?? "-")</div>
-                                                            <div class="small text-muted">Eðitmen</div>
-                                            }
-                                                </div>
+                                            <div class="fw-bold text-white">@item.Tarih.ToString("dd.MM.yyyy")</div>
+                                            <div class="small text-muted">
+                                                <i class="far fa-clock me-1"></i>@item.Baslangic.ToString("HH:mm") - @item.Bitis.ToString("HH:mm")
                                             </div>
                                         </td>
                                         <td>
-                                            <div class="text-white">@item.Hizmet</div>
-                                            <div class="small text-muted"><i class="fas fa-map-marker-alt me-1"></i>@item.Salon?.Ad</div>
+                                            <span class="text-info fw-bold">@item.Hizmet</span>
                                         </td>
                                         <td>
-                                            <div class="text-white fw-bold">@item.Tarih.ToString("dd MMM yyyy")</div>
-                                            <div class="small text-warning">@item.Baslangic.ToString("HH:mm") - @item.Bitis.ToString("HH:mm")</div>
+                                            <div class="text-white small mb-1"><i class="fas fa-map-marker-alt text-secondary me-1"></i>@(item.Salon?.Ad ?? "-")</div>
+                                            <div class="text-muted small"><i class="fas fa-user-ninja text-secondary me-1"></i>@(item.Egitmen?.Ad ?? "-")</div>
                                         </td>
-                                        <td><span class="badge bg-dark border border-secondary text-secondary rounded-pill">@item.Sure dk</span></td>
-                                        <td><span class="text-white fw-bold">@item.Ucret.ToString("C0")</span></td>
                                         <td>
-                                    @if (item.Durum == "Onaylandý")
+                                            <span class="text-success fw-bold">@item.Ucret.ToString("C0")</span>
+                                        </td>
+                                        <td>
+                                    @if (item.Durum == "Ýptal")
                                     {
-                                                    <span class="badge bg-success bg-opacity-10 text-success px-3 py-2 rounded-pill"><i class="fas fa-check-circle me-1"></i>Onaylý</span>
+                                                    <span class="badge bg-danger bg-opacity-10 text-danger border border-danger">Ýptal Edildi</span>
                                     }
-                                    else if (item.Durum == "Ýptal")
+                                    else if (item.Tarih < DateOnly.FromDateTime(DateTime.Now))
                                     {
-                                                    <span class="badge bg-danger bg-opacity-10 text-danger px-3 py-2 rounded-pill"><i class="fas fa-times-circle me-1"></i>Ýptal</span>
+                                                    <span class="badge bg-secondary text-light">Tamamlandý</span>
                                     }
                                     else
                                     {
-                                                    <span class="badge bg-warning bg-opacity-10 text-warning px-3 py-2 rounded-pill"><i class="fas fa-clock me-1"></i>Bekliyor</span>
+                                                    <span class="badge bg-warning text-dark">Aktif</span>
                                     }
                                         </td>
                                         <td class="text-end pe-4">
                                             <div class="btn-group">
-                                                <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-outline-secondary" title="Detaylar"><i class="fas fa-eye"></i></a>
-
-                                        @if (isAdmin && item.Durum == "Beklemede")
+                                                <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-outline-info" title="Detay">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                        @if (item.Durum != "Ýptal" && item.Tarih >= DateOnly.FromDateTime(DateTime.Now))
                                         {
-                                                        <form asp-action="Approve" method="post" asp-route-id="@item.Id" class="d-inline">
-                                                @Html.AntiForgeryToken()
-                                                            <button type="submit" class="btn btn-sm btn-outline-success mx-1" title="Onayla"><i class="fas fa-check"></i></button>
-                                                        </form>
-                                                        <form asp-action="Cancel" method="post" asp-route-id="@item.Id" class="d-inline">
-                                                @Html.AntiForgeryToken()
-                                                            <button type="submit" class="btn btn-sm btn-outline-danger" title="Reddet"><i class="fas fa-times"></i></button>
-                                                        </form>
-                                                        <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-dark ms-1" title="Sil"><i class="fas fa-trash"></i></a>
+                                                        <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-outline-danger" title="Ýptal Et">
+                                                            <i class="fas fa-times"></i>
+                                                        </a>
                                         }
                                             </div>
                                         </td>

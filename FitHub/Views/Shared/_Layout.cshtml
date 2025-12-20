@@ -7,8 +7,8 @@
     <title>FitHub - @ViewData["Title"]</title>
 
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 </head>
 <body>
@@ -20,70 +20,77 @@
     }
 
     <header>
-        <nav class="navbar navbar-expand-lg navbar-dark sticky-top shadow-sm">
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top shadow-sm" style="background-color: #000 !important;">
             <div class="container">
-                <a class="navbar-brand d-flex align-items-center" asp-controller="Home" asp-action="Index">
+                <a class="navbar-brand d-flex align-items-center fw-bold" asp-controller="Home" asp-action="Index">
                     <i class="fas fa-dumbbell text-warning me-2"></i>FitHub
                 </a>
 
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
-                        aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                     <span class="navbar-toggler-icon"></span>
                 </button>
 
-               <div class="collapse navbar-collapse" id="navbarNav">
-    <ul class="navbar-nav me-auto">
-        <li class="nav-item">
-            <a class="nav-link text-dark" asp-controller="Home" asp-action="Index">Ana Sayfa</a>
-        </li>
-
-        <li class="nav-item">
-            <a class="nav-link text-dark" asp-controller="Hizmetler" asp-action="Index">Hizmetlerimiz</a>
-        </li>
-
-        <li class="nav-item">
-            <a class="nav-link text-dark" asp-controller="Ai" asp-action="Koc">AI Koçtan Destek</a>
-        </li>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav me-auto">
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Home" asp-action="Index">Ana Sayfa</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Hizmetler" asp-action="Index">
+                                <i class="fas fa-list-ul me-1 small"></i>Hizmetlerimiz
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Salonlar" asp-action="Index">
+                                <i class="fas fa-building me-1 small"></i>Salonlarımız
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-warning fw-bold" asp-controller="Ai" asp-action="Koc">
+                                <i class="fas fa-robot me-1"></i>AI Koç
+                            </a>
+                        </li>
 
                         @if (isLoggedIn)
                         {
-                <li class="nav-item">
-                    <a class="nav-link text-dark" asp-controller="Randevular" asp-action="Index">Randevularım</a>
-                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-controller="Randevular" asp-action="Index">Randevularım</a>
+                                </li>
                         }
 
                         @if (isAdmin)
                         {
-                <li class="nav-item">
-                    <a class="nav-link text-dark" asp-controller="Home" asp-action="AdminPanel">Admin Panel</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-dark" asp-controller="Salonlar" asp-action="Index">Salonlar</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-dark" asp-controller="Egitmenler" asp-action="Index">Eğitmenler</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-dark" asp-controller="Randevular" asp-action="Index">Tüm Randevular</a>
-                </li>
+                                <li class="nav-item dropdown ms-lg-3">
+                                    <a class="nav-link dropdown-toggle btn btn-outline-secondary btn-sm px-3 text-light" href="#" role="button" data-bs-toggle="dropdown">
+                                        YÖNETİM
+                                    </a>
+                                    <ul class="dropdown-menu dropdown-menu-dark">
+                                        <li><a class="dropdown-item" asp-controller="Home" asp-action="AdminPanel">Panel Özeti</a></li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li><a class="dropdown-item" asp-controller="Salonlar" asp-action="Index">Salon İşlemleri</a></li>
+                                        <li><a class="dropdown-item" asp-controller="Egitmenler" asp-action="Index">Eğitmen İşlemleri</a></li>
+                                        <li><a class="dropdown-item" asp-controller="Hizmetler" asp-action="Index">Hizmet İşlemleri</a></li>
+                                        <li><a class="dropdown-item" asp-controller="Randevular" asp-action="Index">Tüm Randevular</a></li>
+                                    </ul>
+                                </li>
                         }
-    </ul>
+                    </ul>
 
                     <ul class="navbar-nav ms-auto align-items-center">
                         @if (!isLoggedIn)
                         {
                                 <li class="nav-item">
-                                    <a class="nav-link" asp-controller="Uye" asp-action="Login">Giriş Yap</a>
+                                    <a class="nav-link" asp-controller="Uye" asp-action="Register">Kayıt Ol</a>
                                 </li>
                                 <li class="nav-item ms-2">
-                                    <a class="btn btn-accent btn-sm" asp-controller="Uye" asp-action="Register">Kayıt Ol</a>
+                                    <a class="btn btn-warning btn-sm fw-bold text-dark rounded-pill px-3" asp-controller="Uye" asp-action="Login">Giriş Yap</a>
                                 </li>
                         }
                         else
                         {
                                 <li class="nav-item dropdown">
                                     <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown">
-                                        <div class="bg-warning text-black rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 30px; height: 30px; font-weight: bold;">
+                                        <div class="bg-warning text-dark rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 30px; height: 30px; font-weight: bold;">
                                         @userName.Substring(0, 1).ToUpper()
                                         </div>
                                     @userName
@@ -93,7 +100,7 @@
                                             <form asp-controller="Uye" asp-action="Logout" method="post">
                                             @Html.AntiForgeryToken()
                                                 <button type="submit" class="dropdown-item text-danger">
-                                                    <i class="fas fa-sign-out-alt me-2"></i>Çıkış
+                                                    <i class="fas fa-sign-out-alt me-2"></i>Çıkış Yap
                                                 </button>
                                             </form>
                                         </li>
@@ -106,14 +113,15 @@
         </nav>
     </header>
 
-    <main role="main" class="pb-3">
-        @RenderBody()
-    </main>
+    <div class="container-fluid p-0">
+        <main role="main" class="pb-3">
+            @RenderBody()
+        </main>
+    </div>
 
-    <footer class="footer mt-auto py-4">
+    <footer class="bg-black text-secondary py-4 mt-auto border-top border-secondary">
         <div class="container text-center">
             <p class="mb-0">&copy; @DateTime.Now.Year - <strong>FitHub</strong> Fitness Center</p>
-            <small class="text-muted">Web Programlama Proje Ödevi</small>
         </div>
     </footer>
 

@@ -1,132 +1,129 @@
-@model FitHub.Models.EgitmenFormViewModel
+@model FitHub.Models.Egitmen
 @{
     ViewData["Title"] = "Eðitmen Düzenle";
+
+    var baslangicSaat = Model.MusaitlikBaslangic.Hour;
+    var baslangicDakika = Model.MusaitlikBaslangic.Minute;
+
+    var bitisSaat = Model.MusaitlikBitis.Hour;
+    var bitisDakika = Model.MusaitlikBitis.Minute;
 }
 
-<h1 class="mb-4">Eðitmen Düzenle</h1>
+<style>
+    .form-control, .form-select {
+        background-color: #2c2c2c;
+        border: 1px solid #444;
+        color: #fff;
+    }
+    .form-control:focus, .form-select:focus {
+        background-color: #333;
+        color: #fff;
+        border-color: #ffc107;
+        box-shadow: 0 0 0 0.25rem rgba(255, 193, 7, 0.25);
+    }
+    option { background-color: #222; }
+</style>
 
-<form asp-action="Edit" method="post">
-    @Html.AntiForgeryToken()
-    <input type="hidden" asp-for="Id" />
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card bg-card border-0 shadow-lg">
+                <div class="card-header bg-transparent border-bottom border-secondary py-3">
+                    <h3 class="fw-bold text-white mb-0">
+                        <i class="fas fa-user-edit text-warning me-2"></i>Eðitmen Profilini Düzenle
+                    </h3>
+                </div>
+                <div class="card-body p-4">
+                    <form asp-action="Edit">
+                        <input type="hidden" asp-for="Id" />
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger mb-4"></div>
 
-    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <label asp-for="Ad" class="form-label text-muted small">Ad Soyad</label>
+                                <input asp-for="Ad" class="form-control" />
+                                <span asp-validation-for="Ad" class="text-danger small"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="SalonId" class="form-label text-muted small">Çalýþtýðý Salon</label>
+                                <select asp-for="SalonId" class="form-select" asp-items="ViewBag.SalonId"></select>
+                            </div>
+                        </div>
 
-    <div class="mb-3">
-        <label asp-for="Ad" class="form-label"></label>
-        <input asp-for="Ad" class="form-control" />
-        <span asp-validation-for="Ad" class="text-danger"></span>
-    </div>
+                        <div class="mb-4">
+                            <label asp-for="UzmanlikAlanlari" class="form-label text-muted small">Uzmanlýk Alanlarý</label>
+                            <input asp-for="UzmanlikAlanlari" class="form-control" />
+                            <span asp-validation-for="UzmanlikAlanlari" class="text-danger small"></span>
+                        </div>
 
-    <div class="mb-3">
-        <label asp-for="UzmanlikAlanlari" class="form-label">Uzmanlýk Alanlarý</label>
-        <input asp-for="UzmanlikAlanlari" class="form-control" />
-    </div>
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <label class="form-label text-muted small">Mesai Baþlangýç</label>
+                                <div class="d-flex gap-2">
+                                    <select class="form-select time-part" id="start_saat" data-target="MusaitlikBaslangic">
+                                        @for (int i = 7; i <= 22; i++)
+                                        {
+                                                <!option value="@i.ToString("00")" @(i == baslangicSaat ? "selected" : "")>@i.ToString("00")</!option>
+                                        }
+                                    </select>
+                                    <span class="text-white align-self-center">:</span>
+                                    <select class="form-select time-part" id="start_dakika" data-target="MusaitlikBaslangic">
+                                        <!option value="00" @(baslangicDakika == 0 ? "selected" : "")>00</!option>
+                                        <!option value="30" @(baslangicDakika == 30 ? "selected" : "")>30</!option>
+                                    </select>
+                                </div>
+                                <input type="hidden" asp-for="MusaitlikBaslangic" id="MusaitlikBaslangic" />
+                                <span asp-validation-for="MusaitlikBaslangic" class="text-danger small"></span>
+                            </div>
 
-    <!-- Müsaitlik Saatleri (00/30) -->
-    <div class="row">
-        <div class="col-md-6 mb-3">
-            <label class="form-label">Müsaitlik Baþlangýç</label>
+                            <div class="col-md-6">
+                                <label class="form-label text-muted small">Mesai Bitiþ</label>
+                                <div class="d-flex gap-2">
+                                    <select class="form-select time-part" id="end_saat" data-target="MusaitlikBitis">
+                                        @for (int i = 7; i <= 22; i++)
+                                        {
+                                                <!option value="@i.ToString("00")" @(i == bitisSaat ? "selected" : "")>@i.ToString("00")</!option>
+                                        }
+                                    </select>
+                                    <span class="text-white align-self-center">:</span>
+                                    <select class="form-select time-part" id="end_dakika" data-target="MusaitlikBitis">
+                                        <!option value="00" @(bitisDakika == 0 ? "selected" : "")>00</!option>
+                                        <!option value="30" @(bitisDakika == 30 ? "selected" : "")>30</!option>
+                                    </select>
+                                </div>
+                                <input type="hidden" asp-for="MusaitlikBitis" id="MusaitlikBitis" />
+                                <span asp-validation-for="MusaitlikBitis" class="text-danger small"></span>
+                            </div>
+                        </div>
 
-            <input type="hidden" asp-for="MusaitlikBaslangic" id="MusaitBaslangicHidden" />
+                        <div class="alert alert-info small bg-dark border-secondary text-muted">
+                            <i class="fas fa-info-circle me-2"></i>Hizmetleri güncellemek için lütfen ilgili menüyü kullanýn.
+                        </div>
 
-            <div class="d-flex gap-2">
-                <select class="form-select" id="MusaitBaslangicHour" style="max-width:120px">
-                    @for (var h = 0; h < 24; h++)
-                    {
-                        var hh = h.ToString("D2");
-                            <option value="@hh">@hh</option>
-                    }
-                </select>
-
-                <select class="form-select" id="MusaitBaslangicMin" style="max-width:120px">
-                    <option value="00">00</option>
-                    <option value="30">30</option>
-                </select>
+                        <div class="d-flex justify-content-between pt-3 border-top border-secondary">
+                            <a asp-action="Index" class="btn btn-outline-light px-4">Listeye Dön</a>
+                            <button type="submit" class="btn btn-warning px-5 fw-bold shadow">GÜNCELLE</button>
+                        </div>
+                    </form>
+                </div>
             </div>
-
-            <div class="form-text">Dakika sadece 00 veya 30.</div>
-            <span asp-validation-for="MusaitlikBaslangic" class="text-danger"></span>
-        </div>
-
-        <div class="col-md-6 mb-3">
-            <label class="form-label">Müsaitlik Bitiþ</label>
-
-            <input type="hidden" asp-for="MusaitlikBitis" id="MusaitBitisHidden" />
-
-            <div class="d-flex gap-2">
-                <select class="form-select" id="MusaitBitisHour" style="max-width:120px">
-                    @for (var h = 0; h < 24; h++)
-                    {
-                        var hh = h.ToString("D2");
-                            <option value="@hh">@hh</option>
-                    }
-                </select>
-
-                <select class="form-select" id="MusaitBitisMin" style="max-width:120px">
-                    <option value="00">00</option>
-                    <option value="30">30</option>
-                </select>
-            </div>
-
-            <div class="form-text">Dakika sadece 00 veya 30.</div>
-            <span asp-validation-for="MusaitlikBitis" class="text-danger"></span>
         </div>
     </div>
+</div>
 
-    <div class="mb-3">
-        <label asp-for="SalonId" class="form-label">Salon</label>
-        <select asp-for="SalonId" class="form-select" asp-items="Model.Salonlar"></select>
-        <span asp-validation-for="SalonId" class="text-danger"></span>
-    </div>
-
-    <div class="mb-3">
-        <label class="form-label">Eðitmenin Vereceði Hizmetler (çoklu seçim)</label>
-        <select asp-for="SelectedHizmetIds" class="form-select" asp-items="Model.Hizmetler" multiple size="8"></select>
-    </div>
-
-    <button type="submit" class="btn btn-primary">Kaydet</button>
-    <a asp-action="Index" class="btn btn-secondary">Geri</a>
-</form>
-
-@section Scripts {
-        <partial name="_ValidationScriptsPartial" />
+@section Scripts { 
+        <partial name="_ValidationScriptsPartial" /> 
         <script>
-            function setFromHidden(hiddenId, hourId, minId, fallback) {
-                const hidden = document.getElementById(hiddenId);
-                const hour = document.getElementById(hourId);
-                const min = document.getElementById(minId);
-
-                let v = hidden.value;
-                if (v && v.length >= 5) v = v.substring(0, 5);
-                if (!v || v.length < 5) v = fallback;
-
-                const hh = v.substring(0, 2);
-                const mm = v.substring(3, 5);
-
-                hour.value = hh;
-                min.value = (mm === "30") ? "30" : "00";
-
-                hidden.value = `${hour.value}:${min.value}`;
+            function updateTimeInputs() {
+                $('.time-part').each(function() {
+                    var targetId = $(this).data('target');
+                    var prefix = targetId === 'MusaitlikBaslangic' ? 'start' : 'end';
+                    var saat = $('#' + prefix + '_saat').val();
+                    var dakika = $('#' + prefix + '_dakika').val();
+                    $('#' + targetId).val(saat + ':' + dakika);
+                });
             }
-
-            function bind(hiddenId, hourId, minId) {
-                const hidden = document.getElementById(hiddenId);
-                const hour = document.getElementById(hourId);
-                const min = document.getElementById(minId);
-
-                function sync() {
-                    hidden.value = `${hour.value}:${min.value}`;
-                }
-
-                hour.addEventListener("change", sync);
-                min.addEventListener("change", sync);
-                sync();
-            }
-
-            setFromHidden("MusaitBaslangicHidden", "MusaitBaslangicHour", "MusaitBaslangicMin", "09:00");
-            setFromHidden("MusaitBitisHidden", "MusaitBitisHour", "MusaitBitisMin", "22:00");
-
-            bind("MusaitBaslangicHidden", "MusaitBaslangicHour", "MusaitBaslangicMin");
-            bind("MusaitBitisHidden", "MusaitBitisHour", "MusaitBitisMin");
+            $('.time-part').change(updateTimeInputs);
+            updateTimeInputs();
         </script>
 }

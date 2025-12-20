@@ -194,6 +194,81 @@ namespace FitHub.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        // --- RANDEVU DÜZENLEME (GET) ---
+        public async Task<IActionResult> Edit(int? id)
+        {
+            if (id == null) return NotFound();
+
+            var randevu = await _context.Randevular.FindAsync(id);
+            if (randevu == null) return NotFound();
+
+            // Güvenlik: Sadece Admin veya Randevu Sahibi düzenleyebilir
+            if (!IsAdmin && randevu.UyeId != CurrentUserId)
+            {
+                return RedirectToAction("Index");
+            }
+
+            return View(randevu);
+        }
+
+        // --- RANDEVU DÜZENLEME (POST) ---
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(int id, Randevu randevu)
+        {
+            if (id != randevu.Id) return NotFound();
+
+            // Güvenlik Kontrolü
+            var mevcutRandevu = await _context.Randevular.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id);
+            if (mevcutRandevu == null) return NotFound();
+
+            if (!IsAdmin && mevcutRandevu.UyeId != CurrentUserId)
+            {
+                return RedirectToAction("Index");
+            }
+
+            // Dakika Kontrolü: 30 dakika kuralı (Backend Validasyonu)
+            if (randevu.Baslangic.Minute != 0 && randevu.Baslangic.Minute != 30)
+            {
+                ModelState.AddModelError("Baslangic", "Randevu saatleri sadece tam (00) veya buçuk (30) olabilir.");
+            }
+
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    // Hizmet süresine göre Bitiş saatini otomatik güncelle
+                    // (Hizmet süresini veritabanından tekrar çekiyoruz ki tutarlı olsun)
+                    var hizmet = await _context.Hizmetler.FindAsync(mevcutRandevu.HizmetId);
+                    if (hizmet != null)
+                    {
+                        randevu.HizmetId = mevcutRandevu.HizmetId; // Değişmemeli
+                        randevu.SalonId = mevcutRandevu.SalonId;   // Değişmemeli
+                        randevu.EgitmenId = mevcutRandevu.EgitmenId; // Değişmemeli
+                        randevu.UyeId = mevcutRandevu.UyeId; // Değişmemeli
+
+                        // Bitiş saatini hesapla
+                        randevu.Bitis = randevu.Baslangic.AddMinutes(hizmet.SureDakika);
+                        randevu.Sure = hizmet.SureDakika;
+                        randevu.Ucret = hizmet.Ucret;
+
+                        // Diğer alanları koru
+                        randevu.Hizmet = hizmet.Ad;
+                    }
+
+                    _context.Update(randevu);
+                    await _context.SaveChangesAsync();
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    if (!_context.Randevular.Any(e => e.Id == randevu.Id)) return NotFound();
+                    else throw;
+                }
+                return RedirectToAction(nameof(Index));
+            }
+            return View(randevu);
+        }
+
         // --- AJAX & YARDIMCI METOTLAR ---
 
         public async Task<JsonResult> GetEgitmenler(int salonId)

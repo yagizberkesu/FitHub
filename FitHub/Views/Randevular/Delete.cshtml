@@ -1,31 +1,34 @@
 @model FitHub.Models.Randevu
 @{
-    ViewData["Title"] = "Randevu Ýptal/Sil";
+    ViewData["Title"] = "Randevuyu Ýptal Et";
 }
 
 <div class="container py-5 d-flex justify-content-center">
-    <div class="card bg-card border-danger shadow-lg text-center" style="max-width: 500px;">
+    <div class="card bg-card border-danger shadow-lg text-center w-100" style="max-width: 500px;">
         <div class="card-body p-5">
             <div class="mb-4">
-                <i class="fas fa-calendar-times fa-4x text-danger mb-3"></i>
+                <div class="d-inline-flex align-items-center justify-content-center bg-danger bg-opacity-10 rounded-circle mb-3" style="width: 80px; height: 80px;">
+                    <i class="fas fa-exclamation-triangle fa-3x text-danger"></i>
+                </div>
                 <h3 class="fw-bold text-white">Randevuyu Ýptal Et?</h3>
+                <p class="text-muted mt-3">
+                    Aþaðýdaki randevu kaydý iptal edilecektir. Bu iþlem geri alýnamaz.
+                </p>
 
-                <p class="text-muted mb-1">
-                    <span class="text-white fw-bold">@Model.Tarih.ToString("dd.MM.yyyy")</span> tarihindeki
-                </p>
-                <p class="text-warning fs-5 mb-0">
-                    "@Model.Hizmet"
-                </p>
-                <p class="text-muted small mt-2">randevusu silinecek. Bu iþlem geri alýnamaz.</p>
+                <div class="bg-dark rounded p-3 border border-secondary mt-4">
+                    <div class="text-white fw-bold fs-5">@Model.Hizmet</div>
+                    <div class="text-warning my-1">@Model.Tarih.ToString("dd MMMM yyyy")</div>
+                    <div class="text-light small">Saat: @Model.Baslangic.ToString("HH:mm")</div>
+                </div>
             </div>
 
             <form asp-action="Delete">
                 <input type="hidden" asp-for="Id" />
                 <div class="d-grid gap-2">
-                    <button type="submit" class="btn btn-danger btn-lg fw-bold">
-                        <i class="fas fa-trash-alt me-2"></i>Evet, Ýptal Et
+                    <button type="submit" class="btn btn-danger btn-lg fw-bold shadow">
+                        <i class="fas fa-ban me-2"></i>Evet, Ýptal Et
                     </button>
-                    <a asp-action="Index" class="btn btn-outline-light">Vazgeç, Geri Dön</a>
+                    <a asp-action="Index" class="btn btn-outline-light">Vazgeç</a>
                 </div>
             </form>
         </div>

@@ -4,70 +4,56 @@
 }
 
 <div class="container py-5 d-flex justify-content-center">
-    <div class="card bg-card border-0 shadow-lg w-100" style="max-width: 700px;">
+    <div class="card bg-card border-0 shadow-lg w-100" style="max-width: 600px;">
         <div class="card-header bg-transparent border-bottom border-secondary text-center py-4">
-            <div class="bg-dark border border-warning rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+            <div class="bg-dark border border-warning rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 70px; height: 70px;">
                 <i class="fas fa-calendar-check fa-3x text-warning"></i>
             </div>
-            <h2 class="fw-bold text-white mb-0">Randevu Detayý</h2>
-            <p class="text-muted mb-0">Referans No: #@Model.Id</p>
+            <h4 class="fw-bold text-white mb-0">Randevu Özeti</h4>
+            <p class="text-muted small mb-0">Referans Kodu: #@Model.Id</p>
         </div>
 
         <div class="card-body p-4">
             <div class="text-center mb-4">
-                @if (Model.Durum == "Onaylandý")
+                @if (Model.Durum == "Ýptal")
                 {
-                        <span class="badge bg-success fs-6 px-4 py-2 rounded-pill"><i class="fas fa-check-circle me-2"></i>Onaylandý</span>
+                        <span class="badge bg-danger fs-6 px-4 py-2 rounded-pill">ÝPTAL EDÝLDÝ</span>
                 }
-                else if (Model.Durum == "Ýptal")
+                else if (Model.Tarih < DateOnly.FromDateTime(DateTime.Now))
                 {
-                        <span class="badge bg-danger fs-6 px-4 py-2 rounded-pill"><i class="fas fa-times-circle me-2"></i>Ýptal Edildi</span>
+                        <span class="badge bg-secondary fs-6 px-4 py-2 rounded-pill">GEÇMÝÞ RANDEVU</span>
                 }
                 else
                 {
-                        <span class="badge bg-warning text-dark fs-6 px-4 py-2 rounded-pill"><i class="fas fa-clock me-2"></i>Beklemede</span>
+                        <span class="badge bg-success fs-6 px-4 py-2 rounded-pill">AKTÝF RANDEVU</span>
                 }
             </div>
 
             <div class="row g-4">
-                <div class="col-md-6 border-end border-secondary">
-                    <div class="mb-4">
+                <div class="col-6 border-end border-secondary">
+                    <div class="mb-3">
                         <label class="text-secondary small text-uppercase fw-bold">Hizmet</label>
                         <div class="text-white fs-5 fw-bold">@Model.Hizmet</div>
-                        <div class="text-warning small">@Model.Sure dk • @Model.Ucret.ToString("C2")</div>
                     </div>
-
-                    <div class="mb-4">
-                        <label class="text-secondary small text-uppercase fw-bold">Tarih & Saat</label>
-                        <div class="text-white fs-5">@Model.Tarih.ToString("dd MMMM yyyy")</div>
-                        <div class="text-white">@Model.Baslangic.ToString("HH:mm") - @Model.Bitis.ToString("HH:mm")</div>
+                    <div class="mb-3">
+                        <label class="text-secondary small text-uppercase fw-bold">Tarih</label>
+                        <div class="text-white">@Model.Tarih.ToString("dd MMMM yyyy")</div>
+                        <div class="text-warning fw-bold">@Model.Baslangic.ToString("HH:mm") - @Model.Bitis.ToString("HH:mm")</div>
                     </div>
                 </div>
 
-                <div class="col-md-6 ps-md-4">
-                    <div class="mb-4">
-                        <label class="text-secondary small text-uppercase fw-bold">Eðitmen</label>
-                        <div class="d-flex align-items-center mt-1">
-                            <div class="bg-dark rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 32px; height: 32px;">
-                                <i class="fas fa-user-ninja text-muted small"></i>
-                            </div>
-                            <span class="text-white">@(Model.Egitmen?.Ad ?? "Silinmiþ Eðitmen")</span>
-                        </div>
-                    </div>
-
-                    <div class="mb-4">
+                <div class="col-6 ps-4">
+                    <div class="mb-3">
                         <label class="text-secondary small text-uppercase fw-bold">Salon</label>
-                        <div class="d-flex align-items-center mt-1">
-                            <div class="bg-dark rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 32px; height: 32px;">
-                                <i class="fas fa-map-marker-alt text-muted small"></i>
-                            </div>
-                            <span class="text-white">@(Model.Salon?.Ad ?? "Bilinmiyor")</span>
-                        </div>
+                        <div class="text-white">@(Model.Salon?.Ad ?? "-")</div>
                     </div>
-
-                    <div>
-                        <label class="text-secondary small text-uppercase fw-bold">Katýlýmcý</label>
-                        <div class="text-white">@Model.KisiSayisi Kiþi</div>
+                    <div class="mb-3">
+                        <label class="text-secondary small text-uppercase fw-bold">Eðitmen</label>
+                        <div class="text-white">@(Model.Egitmen?.Ad ?? "-")</div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="text-secondary small text-uppercase fw-bold">Ücret</label>
+                        <div class="text-success fs-5 fw-bold">@Model.Ucret.ToString("C2")</div>
                     </div>
                 </div>
             </div>
@@ -75,16 +61,14 @@
 
         <div class="card-footer bg-transparent border-top border-secondary p-4 d-flex justify-content-between">
             <a asp-action="Index" class="btn btn-outline-light px-4">
-                <i class="fas fa-arrow-left me-2"></i>Geri Dön
+                <i class="fas fa-arrow-left me-2"></i>Geri
             </a>
 
-            @if (Model.Durum == "Beklemede")
+            @if (Model.Durum != "Ýptal" && Model.Tarih >= DateOnly.FromDateTime(DateTime.Now))
             {
-                    <form asp-action="Delete" asp-route-id="@Model.Id" method="get">
-                        <button type="submit" class="btn btn-outline-danger px-4">
-                            <i class="fas fa-trash-alt me-2"></i>Ýptal Et
-                        </button>
-                    </form>
+                    <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-outline-danger px-4">
+                        <i class="fas fa-trash-alt me-2"></i>Ýptal Et
+                    </a>
             }
         </div>
     </div>
