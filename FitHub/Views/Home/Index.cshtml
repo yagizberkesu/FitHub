@@ -1,8 +1,21 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "FitHub";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+<section class="hero-section text-white text-center d-flex align-items-center">
+    <div class="container">
+        <h1 class="display-4 fw-bold">HAREKETE GEÇ!</h1>
+        <p class="lead mt-3">
+            Zaman geçiyor. Olmak istediğin kişi misin?
+        </p>
+
+        <div class="mt-4">
+            <a asp-controller="Ai" asp-action="Koc" class="btn btn-danger btn-lg me-2">
+                AI KOÇTAN DESTEK AL
+            </a>
+            <a asp-controller="Salonlar" asp-action="Index" class="btn btn-outline-light btn-lg">
+                SALONLARI GÖR
+            </a>
+        </div>
+    </div>
+</section>

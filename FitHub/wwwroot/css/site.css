@@ -20,3 +20,21 @@ html {
 body {
   margin-bottom: 60px;
 }
+
+.hero-section {
+    min-height: 85vh;
+    background: linear-gradient( rgba(0,0,0,0.75), rgba(0,0,0,0.75) ), url('/images/gym-hero.jpg') center/cover no-repeat;
+}
+
+    .hero-section h1 {
+        letter-spacing: 3px;
+    }
+
+.section-dark {
+    background-color: #111;
+    color: #fff;
+}
+
+    .section-dark h2 span {
+        color: #dc3545;
+    }

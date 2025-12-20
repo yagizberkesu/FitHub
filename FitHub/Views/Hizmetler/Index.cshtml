@@ -6,6 +6,20 @@
 <h1 class="mb-4">Hizmetler</h1>
 <a asp-action="Create" class="btn btn-primary mb-3">Yeni Hizmet</a>
 
+@if (!Model.Any())
+{
+        <div class="alert alert-info text-center mt-4">
+            Henüz Hizmet bulunmuyor.
+        </div>
+}
+else
+{
+        <table class="table table-bordered">
+            <!-- mevcut tablo -->
+        </table>
+}
+
+
 <table class="table table-striped table-bordered">
     <thead class="table-dark">
         <tr>
@@ -33,3 +47,40 @@
         }
     </tbody>
 </table>
+
+                <section class="section-dark py-5">
+    <div class="container text-center">
+        <h2 class="mb-4">
+            <span>FIT</span>HUB NE SUNAR?
+        </h2>
+
+        <div class="row mt-4">
+            <div class="col-md-4 mb-3">
+                <div class="card bg-black text-white border-danger h-100">
+                    <div class="card-body">
+                        <h4>AI KOÇ</h4>
+                        <p>Kişisel hedeflerine göre antrenman planı</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4 mb-3">
+                <div class="card bg-black text-white border-danger h-100">
+                    <div class="card-body">
+                        <h4>RANDEVU SİSTEMİ</h4>
+                        <p>Eğitmen ve hizmetlere kolay erişim</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4 mb-3">
+                <div class="card bg-black text-white border-danger h-100">
+                    <div class="card-body">
+                        <h4>UZMAN EĞİTMENLER</h4>
+                        <p>Alanında deneyimli antrenörler</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

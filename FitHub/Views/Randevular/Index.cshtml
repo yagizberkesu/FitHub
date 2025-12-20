@@ -8,6 +8,20 @@
 <h1 class="mb-4">Randevular</h1>
 <a asp-action="Create" class="btn btn-primary mb-3">Randevu Al</a>
 
+@if (!Model.Any())
+{
+        <div class="alert alert-info text-center mt-4">
+            Henüz Randevu bulunmuyor.
+        </div>
+}
+else
+{
+        <table class="table table-bordered">
+            <!-- mevcut tablo -->
+        </table>
+}
+
+
 <table class="table table-striped table-bordered">
     <thead class="table-dark">
         <tr>
