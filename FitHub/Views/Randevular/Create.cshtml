@@ -1,76 +1,53 @@
-@model FitHub.Models.RandevuCreateViewModel
+ï»¿@model FitHub.Models.RandevuCreateViewModel
 @{
     ViewData["Title"] = "Randevu Al";
 }
 
 <h1 class="mb-4">Randevu Al</h1>
 
-<form asp-action="Create" method="post" class="needs-validation" novalidate>
+<form asp-action="Create" method="post">
     <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
     <div class="row">
-        <div class="col-md-6 mb-3">
+        <div class="col-md-4 mb-3">
             <label class="form-label">Salon</label>
             <select asp-for="SalonId" class="form-select" asp-items="Model.Salonlar" id="salonSelect"></select>
-            <span asp-validation-for="SalonId" class="text-danger"></span>
         </div>
-        <div class="col-md-6 mb-3">
-            <label class="form-label">Eðitmen</label>
+        <div class="col-md-4 mb-3">
+            <label class="form-label">EÄŸitmen</label>
             <select asp-for="EgitmenId" class="form-select" asp-items="Model.Egitmenler" id="egitmenSelect"></select>
-            <span asp-validation-for="EgitmenId" class="text-danger"></span>
         </div>
-    </div>
-
-    <div class="row">
         <div class="col-md-4 mb-3">
             <label class="form-label">Tarih</label>
             <input asp-for="Tarih" class="form-control" type="date" id="tarihInput" />
-            <span asp-validation-for="Tarih" class="text-danger"></span>
         </div>
-        <div class="col-md-4 mb-3">
-            <label class="form-label">Süre (dk)</label>
-            <select asp-for="Sure" class="form-select" id="sureSelect">
-                <option value="30">30</option>
-                <option value="60">60</option>
-                <option value="90">90</option>
-                <option value="120">120</option>
-            </select>
-            <small class="text-muted">30 dakikanýn katý olmalý.</small>
-            <span asp-validation-for="Sure" class="text-danger"></span>
-        </div>
-        <div class="col-md-4 mb-3">
-            <label class="form-label">Kiþi Sayýsý</label>
-            <input asp-for="KisiSayisi" class="form-control" type="number" min="1" max="50" id="kisiInput" />
-            <span asp-validation-for="KisiSayisi" class="text-danger"></span>
-        </div>
-    </div>
-
-    <div class="mb-3">
-        <label class="form-label">Saat (30 dk aralýklarla)</label>
-        <select asp-for="BaslangicStr" class="form-select" id="saatSelect">
-            @foreach (var s in Model.SaatSecenekleri)
-            {
-                    <option value="@s">@s</option>
-            }
-        </select>
-        <span asp-validation-for="BaslangicStr" class="text-danger"></span>
-        <div class="form-text">Uygun saatler otomatik listelenir (salon kontenjaný + eðitmen doluluðu kontrol edilir).</div>
     </div>
 
     <div class="row">
-        <div class="col-md-8 mb-3">
+        <div class="col-md-6 mb-3">
             <label class="form-label">Hizmet</label>
-            <input asp-for="Hizmet" class="form-control" placeholder="Örn: Pilates" />
-            <span asp-validation-for="Hizmet" class="text-danger"></span>
+            <select asp-for="HizmetId" class="form-select" asp-items="Model.Hizmetler" id="hizmetSelect"></select>
+            <span asp-validation-for="HizmetId" class="text-danger"></span>
+            <div class="form-text" id="hizmetInfo"></div>
         </div>
-        <div class="col-md-4 mb-3">
-            <label class="form-label">Ücret</label>
-            <input asp-for="Ucret" class="form-control" type="number" step="0.01" min="0" />
-            <span asp-validation-for="Ucret" class="text-danger"></span>
+        <div class="col-md-3 mb-3">
+            <label class="form-label">KiÅŸi SayÄ±sÄ±</label>
+            <input asp-for="KisiSayisi" class="form-control" type="number" min="1" max="50" id="kisiInput" />
+            <span asp-validation-for="KisiSayisi" class="text-danger"></span>
+        </div>
+        <div class="col-md-3 mb-3">
+            <label class="form-label">Saat (30 dk aralÄ±klarla)</label>
+            <select asp-for="BaslangicStr" class="form-select" id="saatSelect">
+                @foreach (var s in Model.SaatSecenekleri)
+                {
+                        <option value="@s">@s</option>
+                }
+            </select>
+            <span asp-validation-for="BaslangicStr" class="text-danger"></span>
         </div>
     </div>
 
-    <button type="submit" class="btn btn-primary">Randevuyu Oluþtur</button>
+    <button type="submit" class="btn btn-primary">Randevuyu OluÅŸtur</button>
     <a asp-action="Index" class="btn btn-secondary">Geri</a>
 </form>
 
@@ -78,31 +55,85 @@
         <partial name="_ValidationScriptsPartial" />
 
         <script>
+            let hizmetCache = [];
+
+            async function refreshHizmetler() {
+                const salonId = document.getElementById('salonSelect').value;
+                const egitmenId = document.getElementById('egitmenSelect').value;
+                const hizmetSelect = document.getElementById('hizmetSelect');
+
+                const url = `@Url.Action("GetHizmetler", "Randevular")?salonId=${salonId}&egitmenId=${egitmenId}`;
+                const res = await fetch(url);
+
+                hizmetSelect.innerHTML = '';
+                hizmetCache = [];
+
+                if (!res.ok) {
+                    const opt = document.createElement('option');
+                    opt.value = '';
+                    opt.textContent = 'Hizmet listesi alÄ±namadÄ±';
+                    hizmetSelect.appendChild(opt);
+                    document.getElementById('hizmetInfo').textContent = '';
+                    return;
+                }
+
+                const data = await res.json();
+                hizmetCache = data || [];
+
+                if (!hizmetCache.length) {
+                    const opt = document.createElement('option');
+                    opt.value = '';
+                    opt.textContent = 'Bu seÃ§im iÃ§in hizmet yok';
+                    hizmetSelect.appendChild(opt);
+                    document.getElementById('hizmetInfo').textContent = '';
+                    return;
+                }
+
+                for (const h of hizmetCache) {
+                    const opt = document.createElement('option');
+                    opt.value = h.id;
+                    opt.textContent = `${h.ad} (${h.sureDakika} dk - ${h.ucret} â‚º)`;
+                    hizmetSelect.appendChild(opt);
+                }
+
+                updateHizmetInfo();
+                await refreshSlots();
+            }
+
+            function updateHizmetInfo() {
+                const hizmetSelect = document.getElementById('hizmetSelect');
+                const selectedId = parseInt(hizmetSelect.value || '0');
+                const h = hizmetCache.find(x => x.id === selectedId);
+                const info = document.getElementById('hizmetInfo');
+
+                if (!h) { info.textContent = ''; return; }
+                info.textContent = `SÃ¼re: ${h.sureDakika} dk | Ãœcret: ${h.ucret} â‚º`;
+            }
+
             async function refreshSlots() {
                 const salonId = document.getElementById('salonSelect').value;
                 const egitmenId = document.getElementById('egitmenSelect').value;
                 const tarih = document.getElementById('tarihInput').value;
-                const sure = document.getElementById('sureSelect').value;
+                const hizmetId = document.getElementById('hizmetSelect').value;
                 const kisi = document.getElementById('kisiInput').value;
                 const saatSelect = document.getElementById('saatSelect');
 
-                if (!salonId || !egitmenId || !tarih || !sure) return;
+                if (!salonId || !egitmenId || !tarih || !hizmetId) return;
 
-                const url = `@Url.Action("GetSlots", "Randevular")?salonId=${salonId}&egitmenId=${egitmenId}&tarih=${tarih}&sure=${sure}&kisiSayisi=${kisi}`;
-
+                const url = `@Url.Action("GetSlots", "Randevular")?salonId=${salonId}&egitmenId=${egitmenId}&tarih=${tarih}&hizmetId=${hizmetId}&kisiSayisi=${kisi}`;
                 const res = await fetch(url);
+
                 saatSelect.innerHTML = '';
 
                 if (!res.ok) {
                     const opt = document.createElement('option');
                     opt.value = '';
-                    opt.textContent = 'Saat listesi alýnamadý';
+                    opt.textContent = 'Saat listesi alÄ±namadÄ±';
                     saatSelect.appendChild(opt);
                     return;
                 }
 
                 const data = await res.json();
-
                 if (!data || data.length === 0) {
                     const opt = document.createElement('option');
                     opt.value = '';
@@ -119,12 +150,16 @@
                 }
             }
 
-            document.getElementById('salonSelect').addEventListener('change', refreshSlots);
-            document.getElementById('egitmenSelect').addEventListener('change', refreshSlots);
+            document.getElementById('salonSelect').addEventListener('change', refreshHizmetler);
+            document.getElementById('egitmenSelect').addEventListener('change', refreshHizmetler);
             document.getElementById('tarihInput').addEventListener('change', refreshSlots);
-            document.getElementById('sureSelect').addEventListener('change', refreshSlots);
             document.getElementById('kisiInput').addEventListener('change', refreshSlots);
+            document.getElementById('hizmetSelect').addEventListener('change', async () => {
+                updateHizmetInfo();
+                await refreshSlots();
+            });
 
-            refreshSlots();
+            // ilk yÃ¼kleme
+            refreshHizmetler();
         </script>
 }

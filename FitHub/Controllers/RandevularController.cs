@@ -1,17 +1,11 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using FitHub.Filters;
+ï»¿using FitHub.Filters;
 using FitHub.Models;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 
 namespace FitHub.Controllers
 {
-    // Üye randevu alýr, admin onaylar/iptal eder.
     public class RandevularController : Controller
     {
         private readonly FitHubContext _context;
@@ -46,6 +40,70 @@ namespace FitHub.Controllers
             return View(list);
         }
 
+        // =========================================================
+        // ADMIN ONAY / IPTAL
+        //  - GET gelirse de Ã§alÄ±ÅŸsÄ±n (linke tÄ±klayÄ±nca 405 olmasÄ±n)
+        //  - POST ile de Ã§alÄ±ÅŸsÄ±n (form kullanÄ±nca doÄŸru yol)
+        // =========================================================
+
+        [AdminAuthorize]
+        [HttpGet]
+        public async Task<IActionResult> Approve(int id)
+        {
+            var r = await _context.Randevular.FindAsync(id);
+            if (r == null) return NotFound();
+
+            r.Durum = "OnaylandÄ±";
+            r.Onaylandi = true;
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction(nameof(Index));
+        }
+
+        [AdminAuthorize]
+        [HttpPost, ActionName("Approve")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ApprovePost(int id)
+        {
+            var r = await _context.Randevular.FindAsync(id);
+            if (r == null) return NotFound();
+
+            r.Durum = "OnaylandÄ±";
+            r.Onaylandi = true;
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction(nameof(Index));
+        }
+
+        [AdminAuthorize]
+        [HttpGet]
+        public async Task<IActionResult> Cancel(int id)
+        {
+            var r = await _context.Randevular.FindAsync(id);
+            if (r == null) return NotFound();
+
+            r.Durum = "Ä°ptal";
+            r.Onaylandi = false;
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction(nameof(Index));
+        }
+
+        [AdminAuthorize]
+        [HttpPost, ActionName("Cancel")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CancelPost(int id)
+        {
+            var r = await _context.Randevular.FindAsync(id);
+            if (r == null) return NotFound();
+
+            r.Durum = "Ä°ptal";
+            r.Onaylandi = false;
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction(nameof(Index));
+        }
+
         public async Task<IActionResult> Create()
         {
             if (CurrentUserId == null) return RedirectToAction("Login", "Uye");
@@ -56,27 +114,52 @@ namespace FitHub.Controllers
             if (vm.Salonlar.Count > 0) vm.SalonId = int.Parse(vm.Salonlar[0].Value!);
             if (vm.Egitmenler.Count > 0) vm.EgitmenId = int.Parse(vm.Egitmenler[0].Value!);
 
-            vm.SaatSecenekleri = await ComputeAvailableSlots(vm.SalonId, vm.EgitmenId, vm.Tarih, vm.Sure, vm.KisiSayisi);
+            await FillHizmetler(vm);
+
+            if (vm.Hizmetler.Count > 0) vm.HizmetId = int.Parse(vm.Hizmetler[0].Value!);
+
+            vm.SaatSecenekleri = await ComputeAvailableSlots(vm.SalonId, vm.EgitmenId, vm.Tarih, vm.HizmetId, vm.KisiSayisi);
             if (vm.SaatSecenekleri.Count > 0) vm.BaslangicStr = vm.SaatSecenekleri[0];
 
             return View(vm);
         }
 
-        // JS burayý çaðýrýyor (salon/egitmen/tarih/sure/kisi deðiþince)
+        // Salon/EÄŸitmen deÄŸiÅŸince hizmetleri getir (JSON)
         [HttpGet]
-        public async Task<IActionResult> GetSlots(int salonId, int egitmenId, string tarih, int sure, int kisiSayisi)
+        public async Task<IActionResult> GetHizmetler(int salonId, int egitmenId)
+        {
+            var egitmenHizmetleri = await _context.EgitmenHizmetler
+                .AsNoTracking()
+                .Where(x => x.EgitmenId == egitmenId)
+                .Select(x => x.Hizmet!)
+                .Where(h => h.SalonId == salonId)
+                .Select(h => new { h.Id, h.Ad, h.SureDakika, h.Ucret })
+                .ToListAsync();
+
+            if (egitmenHizmetleri.Count > 0)
+                return Json(egitmenHizmetleri);
+
+            var salonHizmetleri = await _context.Hizmetler
+                .AsNoTracking()
+                .Where(h => h.SalonId == salonId)
+                .Select(h => new { h.Id, h.Ad, h.SureDakika, h.Ucret })
+                .ToListAsync();
+
+            return Json(salonHizmetleri);
+        }
+
+        // Uygun saatler
+        [HttpGet]
+        public async Task<IActionResult> GetSlots(int salonId, int egitmenId, string tarih, int hizmetId, int kisiSayisi)
         {
             if (CurrentUserId == null) return Unauthorized();
 
             if (!DateOnly.TryParse(tarih, out var date))
-                return BadRequest("tarih formatý yanlýþ (yyyy-MM-dd)");
-
-            if (sure % 30 != 0 || sure <= 0)
-                return BadRequest("sure 30'un katý olmalý");
+                return BadRequest("tarih formatÄ± yanlÄ±ÅŸ (yyyy-MM-dd)");
 
             if (kisiSayisi <= 0) kisiSayisi = 1;
 
-            var slots = await ComputeAvailableSlots(salonId, egitmenId, date, sure, kisiSayisi);
+            var slots = await ComputeAvailableSlots(salonId, egitmenId, date, hizmetId, kisiSayisi);
             return Json(slots);
         }
 
@@ -87,26 +170,31 @@ namespace FitHub.Controllers
             if (CurrentUserId == null) return RedirectToAction("Login", "Uye");
 
             await FillDropDowns(vm);
-
-            if (vm.Sure % 30 != 0)
-                ModelState.AddModelError(nameof(vm.Sure), "Süre 30 dakikanýn katý olmalý.");
+            await FillHizmetler(vm);
 
             if (!TimeOnly.TryParseExact(vm.BaslangicStr, "HH:mm", out var baslangic))
-                ModelState.AddModelError(nameof(vm.BaslangicStr), "Geçersiz saat seçimi.");
+                ModelState.AddModelError(nameof(vm.BaslangicStr), "GeÃ§ersiz saat seÃ§imi.");
+
+            var hizmet = await _context.Hizmetler.AsNoTracking().FirstOrDefaultAsync(h => h.Id == vm.HizmetId);
+            if (hizmet == null)
+                ModelState.AddModelError(nameof(vm.HizmetId), "Hizmet seÃ§iniz.");
+
+            if (hizmet != null && hizmet.SureDakika % 30 != 0)
+                ModelState.AddModelError(nameof(vm.HizmetId), "Hizmet sÃ¼resi 30 dakikanÄ±n katÄ± olmalÄ±.");
 
             if (!ModelState.IsValid)
             {
-                vm.SaatSecenekleri = await ComputeAvailableSlots(vm.SalonId, vm.EgitmenId, vm.Tarih, vm.Sure, vm.KisiSayisi);
+                vm.SaatSecenekleri = await ComputeAvailableSlots(vm.SalonId, vm.EgitmenId, vm.Tarih, vm.HizmetId, vm.KisiSayisi);
                 return View(vm);
             }
 
-            var bitis = baslangic.AddMinutes(vm.Sure);
+            var sure = hizmet!.SureDakika;
+            var bitis = baslangic.AddMinutes(sure);
 
-            // “Seçilen slot hala uygun mu?” kontrolü (race-condition engeli)
-            var available = await ComputeAvailableSlots(vm.SalonId, vm.EgitmenId, vm.Tarih, vm.Sure, vm.KisiSayisi);
+            var available = await ComputeAvailableSlots(vm.SalonId, vm.EgitmenId, vm.Tarih, vm.HizmetId, vm.KisiSayisi);
             if (!available.Contains(vm.BaslangicStr))
             {
-                ModelState.AddModelError("", "Seçtiðiniz saat artýk uygun deðil. Lütfen tekrar seçin.");
+                ModelState.AddModelError("", "SeÃ§tiÄŸiniz saat artÄ±k uygun deÄŸil. LÃ¼tfen tekrar seÃ§in.");
                 vm.SaatSecenekleri = available;
                 return View(vm);
             }
@@ -119,95 +207,17 @@ namespace FitHub.Controllers
                 Tarih = vm.Tarih,
                 Baslangic = baslangic,
                 Bitis = bitis,
-                Sure = vm.Sure,
+                Sure = sure,
                 KisiSayisi = vm.KisiSayisi,
-                Hizmet = vm.Hizmet ?? string.Empty,
-                Ucret = vm.Ucret,
+                HizmetId = vm.HizmetId,
+                Hizmet = hizmet.Ad,
+                Ucret = hizmet.Ucret,
                 Durum = "Beklemede",
                 Onaylandi = false
             };
 
             _context.Randevular.Add(entity);
             await _context.SaveChangesAsync();
-
-            return RedirectToAction(nameof(Index));
-        }
-
-        public async Task<IActionResult> Details(int? id)
-        {
-            if (CurrentUserId == null) return RedirectToAction("Login", "Uye");
-            if (id == null) return NotFound();
-
-            var r = await _context.Randevular
-                .Include(x => x.Uye)
-                .Include(x => x.Egitmen)
-                .Include(x => x.Salon)
-                .AsNoTracking()
-                .FirstOrDefaultAsync(x => x.Id == id);
-
-            if (r == null) return NotFound();
-            if (!IsAdmin && r.UyeId != CurrentUserId.Value) return Forbid();
-
-            return View(r);
-        }
-
-        [AdminAuthorize]
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Approve(int id)
-        {
-            var r = await _context.Randevular.FindAsync(id);
-            if (r == null) return NotFound();
-
-            r.Durum = "Onaylandý";
-            r.Onaylandi = true;
-            await _context.SaveChangesAsync();
-
-            return RedirectToAction(nameof(Index));
-        }
-
-        [AdminAuthorize]
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Cancel(int id)
-        {
-            var r = await _context.Randevular.FindAsync(id);
-            if (r == null) return NotFound();
-
-            r.Durum = "Ýptal";
-            r.Onaylandi = false;
-            await _context.SaveChangesAsync();
-
-            return RedirectToAction(nameof(Index));
-        }
-
-        [AdminAuthorize]
-        public async Task<IActionResult> Delete(int? id)
-        {
-            if (id == null) return NotFound();
-
-            var r = await _context.Randevular
-                .Include(x => x.Uye)
-                .Include(x => x.Egitmen)
-                .Include(x => x.Salon)
-                .AsNoTracking()
-                .FirstOrDefaultAsync(x => x.Id == id);
-
-            if (r == null) return NotFound();
-            return View(r);
-        }
-
-        [AdminAuthorize]
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
-        {
-            var r = await _context.Randevular.FindAsync(id);
-            if (r != null)
-            {
-                _context.Randevular.Remove(r);
-                await _context.SaveChangesAsync();
-            }
             return RedirectToAction(nameof(Index));
         }
 
@@ -226,51 +236,74 @@ namespace FitHub.Controllers
                 .ToListAsync();
         }
 
+        private async Task FillHizmetler(RandevuCreateViewModel vm)
+        {
+            var q = _context.EgitmenHizmetler
+                .AsNoTracking()
+                .Where(x => x.EgitmenId == vm.EgitmenId)
+                .Select(x => x.Hizmet!)
+                .Where(h => h.SalonId == vm.SalonId);
+
+            var list = await q.ToListAsync();
+
+            if (list.Count == 0)
+            {
+                list = await _context.Hizmetler.AsNoTracking()
+                    .Where(h => h.SalonId == vm.SalonId)
+                    .ToListAsync();
+            }
+
+            vm.Hizmetler = list
+                .OrderBy(h => h.Ad)
+                .Select(h => new SelectListItem
+                {
+                    Value = h.Id.ToString(),
+                    Text = $"{h.Ad} ({h.SureDakika} dk - {h.Ucret} â‚º)"
+                })
+                .ToList();
+        }
+
         private static bool Overlaps(TimeOnly aStart, TimeOnly aEnd, TimeOnly bStart, TimeOnly bEnd)
             => aStart < bEnd && aEnd > bStart;
 
-        private async Task<List<string>> ComputeAvailableSlots(int salonId, int egitmenId, DateOnly tarih, int sure, int kisiSayisi)
+        private async Task<List<string>> ComputeAvailableSlots(int salonId, int egitmenId, DateOnly tarih, int hizmetId, int kisiSayisi)
         {
             var salon = await _context.Salonlar.AsNoTracking().FirstOrDefaultAsync(s => s.Id == salonId);
             var egitmen = await _context.Egitmenler.AsNoTracking().FirstOrDefaultAsync(e => e.Id == egitmenId);
+            var hizmet = await _context.Hizmetler.AsNoTracking().FirstOrDefaultAsync(h => h.Id == hizmetId);
 
-            if (salon == null || egitmen == null) return new List<string>();
+            if (salon == null || egitmen == null || hizmet == null) return new List<string>();
 
-            // salon + eðitmen saatlerinin kesiþimi
+            var sure = hizmet.SureDakika;
+            if (sure <= 0 || sure % 30 != 0) return new List<string>();
+
             var start = salon.CalismaBaslangic > egitmen.MusaitlikBaslangic ? salon.CalismaBaslangic : egitmen.MusaitlikBaslangic;
             var end = salon.CalismaBitis < egitmen.MusaitlikBitis ? salon.CalismaBitis : egitmen.MusaitlikBitis;
 
             if (start.AddMinutes(sure) > end) return new List<string>();
 
-            // tek seferde randevularý çek
             var existingSalon = await _context.Randevular
                 .AsNoTracking()
-                .Where(r => r.SalonId == salonId && r.Tarih == tarih && r.Durum != "Ýptal")
+                .Where(r => r.SalonId == salonId && r.Tarih == tarih && r.Durum != "Ä°ptal")
                 .Select(r => new { r.Baslangic, r.Bitis, r.KisiSayisi })
                 .ToListAsync();
 
             var existingEgitmen = await _context.Randevular
                 .AsNoTracking()
-                .Where(r => r.EgitmenId == egitmenId && r.Tarih == tarih && r.Durum != "Ýptal")
+                .Where(r => r.EgitmenId == egitmenId && r.Tarih == tarih && r.Durum != "Ä°ptal")
                 .Select(r => new { r.Baslangic, r.Bitis })
                 .ToListAsync();
 
             var slots = new List<string>();
 
-            // 30 dk step
             for (var t = start; t.AddMinutes(sure) <= end; t = t.AddMinutes(30))
             {
                 var tEnd = t.AddMinutes(sure);
 
-                // eðitmen ayný anda 1 randevu
                 if (existingEgitmen.Any(x => Overlaps(t, tEnd, x.Baslangic, x.Bitis)))
                     continue;
 
-                // salon kontenjan
-                var dolu = existingSalon
-                    .Where(x => Overlaps(t, tEnd, x.Baslangic, x.Bitis))
-                    .Sum(x => x.KisiSayisi);
-
+                var dolu = existingSalon.Where(x => Overlaps(t, tEnd, x.Baslangic, x.Bitis)).Sum(x => x.KisiSayisi);
                 if (dolu + kisiSayisi > salon.Kontenjan)
                     continue;
 

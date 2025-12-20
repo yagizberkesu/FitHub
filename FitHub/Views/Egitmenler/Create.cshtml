@@ -1,4 +1,4 @@
-@model FitHub.Models.Egitmen
+@model FitHub.Models.EgitmenFormViewModel
 @{
     ViewData["Title"] = "Eðitmen Ekle";
 }
@@ -16,33 +16,30 @@
 
     <div class="mb-3">
         <label asp-for="UzmanlikAlanlari" class="form-label">Uzmanlýk Alanlarý</label>
-        <input asp-for="UzmanlikAlanlari" class="form-control" placeholder="Örn: Yoga, Pilates" />
-        <span asp-validation-for="UzmanlikAlanlari" class="text-danger"></span>
-    </div>
-
-    <div class="mb-3">
-        <label asp-for="Hizmetler" class="form-label">Hizmetler</label>
-        <input asp-for="Hizmetler" class="form-control" placeholder="Örn: PT, Grup Dersi" />
-        <span asp-validation-for="Hizmetler" class="text-danger"></span>
+        <input asp-for="UzmanlikAlanlari" class="form-control" />
     </div>
 
     <div class="row">
         <div class="col-md-6 mb-3">
             <label asp-for="MusaitlikBaslangic" class="form-label">Müsaitlik Baþlangýç</label>
             <input asp-for="MusaitlikBaslangic" type="time" class="form-control" />
-            <span asp-validation-for="MusaitlikBaslangic" class="text-danger"></span>
         </div>
         <div class="col-md-6 mb-3">
             <label asp-for="MusaitlikBitis" class="form-label">Müsaitlik Bitiþ</label>
             <input asp-for="MusaitlikBitis" type="time" class="form-control" />
-            <span asp-validation-for="MusaitlikBitis" class="text-danger"></span>
         </div>
     </div>
 
     <div class="mb-3">
         <label asp-for="SalonId" class="form-label">Salon</label>
-        <select asp-for="SalonId" class="form-select" asp-items="ViewBag.SalonId"></select>
+        <select asp-for="SalonId" class="form-select" asp-items="Model.Salonlar"></select>
         <span asp-validation-for="SalonId" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Eðitmenin Vereceði Hizmetler (çoklu seçim)</label>
+        <select asp-for="SelectedHizmetIds" class="form-select" asp-items="Model.Hizmetler" multiple size="8"></select>
+        <div class="form-text">Ctrl ile çoklu seçim yapabilirsin.</div>
     </div>
 
     <button type="submit" class="btn btn-primary">Kaydet</button>

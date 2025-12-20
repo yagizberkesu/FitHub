@@ -1,0 +1,33 @@
+﻿@model FitHub.Models.Hizmet
+@{
+    ViewData["Title"] = "Hizmet Sil";
+}
+
+<h1 class="mb-4">Hizmet Sil</h1>
+
+<div class="alert alert-warning">Bu hizmeti silmek istediğinize emin misiniz?</div>
+
+<div class="card mb-3">
+    <div class="card-body">
+        <dl class="row">
+            <dt class="col-sm-3">Ad</dt>
+            <dd class="col-sm-9">@Model.Ad</dd>
+
+            <dt class="col-sm-3">Salon</dt>
+            <dd class="col-sm-9">@Model.Salon?.Ad</dd>
+
+            <dt class="col-sm-3">Süre</dt>
+            <dd class="col-sm-9">@Model.SureDakika dk</dd>
+
+            <dt class="col-sm-3">Ücret</dt>
+            <dd class="col-sm-9">@Model.Ucret ₺</dd>
+        </dl>
+    </div>
+</div>
+
+<form asp-action="Delete" method="post">
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="Id" />
+    <button type="submit" class="btn btn-danger">Sil</button>
+    <a asp-action="Index" class="btn btn-secondary">İptal</a>
+</form>

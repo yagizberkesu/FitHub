@@ -1,135 +1,193 @@
+ï»¿using FitHub.Filters;
+using FitHub.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using FitHub.Models;
-using FitHub.Filters;
 
-namespace FitHub.Controllers;
-
-[AdminAuthorize]
-public class EgitmenlerController : Controller
+namespace FitHub.Controllers
 {
-    private readonly FitHubContext _context;
-
-    public EgitmenlerController(FitHubContext context)
+    [AdminAuthorize]
+    public class EgitmenlerController : Controller
     {
-        _context = context;
-    }
+        private readonly FitHubContext _context;
 
-    // GET: /Egitmenler
-    public async Task<IActionResult> Index()
-    {
-        var egitmenler = await _context.Set<Egitmen>()
-            .Include(e => e.Salon)
-            .AsNoTracking()
-            .ToListAsync();
-
-        return View(egitmenler);
-    }
-
-    // GET: /Egitmenler/Details/5
-    public async Task<IActionResult> Details(int? id)
-    {
-        if (id == null) return NotFound();
-
-        var egitmen = await _context.Set<Egitmen>()
-            .Include(e => e.Salon)
-            .AsNoTracking()
-            .FirstOrDefaultAsync(e => e.Id == id);
-
-        if (egitmen == null) return NotFound();
-        return View(egitmen);
-    }
-
-    // GET: /Egitmenler/Create
-    public IActionResult Create()
-    {
-        ViewData["SalonId"] = SalonSelectList();
-        return View();
-    }
-
-    // POST: /Egitmenler/Create
-    [HttpPost]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Create(Egitmen egitmen)
-    {
-        if (!ModelState.IsValid)
+        public EgitmenlerController(FitHubContext context)
         {
-            ViewData["SalonId"] = SalonSelectList(egitmen.SalonId);
+            _context = context;
+        }
+
+        public async Task<IActionResult> Index()
+        {
+            var egitmenler = await _context.Egitmenler
+                .Include(e => e.Salon)
+                .Include(e => e.EgitmenHizmetler)
+                    .ThenInclude(eh => eh.Hizmet)
+                .AsNoTracking()
+                .ToListAsync();
+
+            return View(egitmenler);
+        }
+
+        public async Task<IActionResult> Details(int? id)
+        {
+            if (id == null) return NotFound();
+
+            var egitmen = await _context.Egitmenler
+                .Include(e => e.Salon)
+                .Include(e => e.EgitmenHizmetler)
+                    .ThenInclude(eh => eh.Hizmet)
+                .AsNoTracking()
+                .FirstOrDefaultAsync(e => e.Id == id);
+
+            if (egitmen == null) return NotFound();
             return View(egitmen);
         }
 
-        _context.Add(egitmen);
-        await _context.SaveChangesAsync();
-        return RedirectToAction(nameof(Index));
-    }
-
-    // GET: /Egitmenler/Edit/5
-    public async Task<IActionResult> Edit(int? id)
-    {
-        if (id == null) return NotFound();
-
-        var egitmen = await _context.Set<Egitmen>().FindAsync(id);
-        if (egitmen == null) return NotFound();
-
-        ViewData["SalonId"] = SalonSelectList(egitmen.SalonId);
-        return View(egitmen);
-    }
-
-    // POST: /Egitmenler/Edit/5
-    [HttpPost]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Edit(int id, Egitmen egitmen)
-    {
-        if (id != egitmen.Id) return NotFound();
-
-        if (!ModelState.IsValid)
+        public async Task<IActionResult> Create()
         {
-            ViewData["SalonId"] = SalonSelectList(egitmen.SalonId);
-            return View(egitmen);
+            var vm = new EgitmenFormViewModel();
+            await FillLists(vm);
+            return View(vm);
         }
 
-        _context.Update(egitmen);
-        await _context.SaveChangesAsync();
-        return RedirectToAction(nameof(Index));
-    }
-
-    // GET: /Egitmenler/Delete/5
-    public async Task<IActionResult> Delete(int? id)
-    {
-        if (id == null) return NotFound();
-
-        var egitmen = await _context.Set<Egitmen>()
-            .Include(e => e.Salon)
-            .AsNoTracking()
-            .FirstOrDefaultAsync(e => e.Id == id);
-
-        if (egitmen == null) return NotFound();
-        return View(egitmen);
-    }
-
-    // POST: /Egitmenler/Delete/5
-    [HttpPost, ActionName("Delete")]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> DeleteConfirmed(int id)
-    {
-        var egitmen = await _context.Set<Egitmen>().FindAsync(id);
-        if (egitmen != null)
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create(EgitmenFormViewModel vm)
         {
-            _context.Remove(egitmen);
+            await FillLists(vm);
+
+            if (!ModelState.IsValid)
+                return View(vm);
+
+            var egitmen = new Egitmen
+            {
+                Ad = vm.Ad,
+                UzmanlikAlanlari = vm.UzmanlikAlanlari ?? "",
+                MusaitlikBaslangic = vm.MusaitlikBaslangic,
+                MusaitlikBitis = vm.MusaitlikBitis,
+                SalonId = vm.SalonId
+            };
+
+            _context.Egitmenler.Add(egitmen);
             await _context.SaveChangesAsync();
+
+            // join kayÄ±tlarÄ±
+            var selected = vm.SelectedHizmetIds?.Distinct().ToList() ?? new List<int>();
+            foreach (var hid in selected)
+                _context.EgitmenHizmetler.Add(new EgitmenHizmet { EgitmenId = egitmen.Id, HizmetId = hid });
+
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction(nameof(Index));
         }
-        return RedirectToAction(nameof(Index));
-    }
 
-    private SelectList SalonSelectList(int? selectedId = null)
-    {
-        // Salon adý alanýn "Ad" deðilse (SalonAdi vb.) burayý deðiþtir.
-        var salonlar = _context.Set<Salon>()
-            .AsNoTracking()
-            .OrderBy(s => s.Id)
-            .ToList();
+        public async Task<IActionResult> Edit(int? id)
+        {
+            if (id == null) return NotFound();
 
-        return new SelectList(salonlar, "Id", "Ad", selectedId);
+            var egitmen = await _context.Egitmenler
+                .Include(e => e.EgitmenHizmetler)
+                .FirstOrDefaultAsync(e => e.Id == id);
+
+            if (egitmen == null) return NotFound();
+
+            var vm = new EgitmenFormViewModel
+            {
+                Id = egitmen.Id,
+                Ad = egitmen.Ad,
+                UzmanlikAlanlari = egitmen.UzmanlikAlanlari,
+                MusaitlikBaslangic = egitmen.MusaitlikBaslangic,
+                MusaitlikBitis = egitmen.MusaitlikBitis,
+                SalonId = egitmen.SalonId,
+                SelectedHizmetIds = egitmen.EgitmenHizmetler.Select(x => x.HizmetId).ToList()
+            };
+
+            await FillLists(vm);
+            return View(vm);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(int id, EgitmenFormViewModel vm)
+        {
+            if (id != vm.Id) return NotFound();
+
+            await FillLists(vm);
+
+            if (!ModelState.IsValid)
+                return View(vm);
+
+            var egitmen = await _context.Egitmenler
+                .Include(e => e.EgitmenHizmetler)
+                .FirstOrDefaultAsync(e => e.Id == id);
+
+            if (egitmen == null) return NotFound();
+
+            egitmen.Ad = vm.Ad;
+            egitmen.UzmanlikAlanlari = vm.UzmanlikAlanlari ?? "";
+            egitmen.MusaitlikBaslangic = vm.MusaitlikBaslangic;
+            egitmen.MusaitlikBitis = vm.MusaitlikBitis;
+            egitmen.SalonId = vm.SalonId;
+
+            // join sync
+            var selected = (vm.SelectedHizmetIds ?? new List<int>()).Distinct().ToList();
+
+            var toRemove = egitmen.EgitmenHizmetler.Where(x => !selected.Contains(x.HizmetId)).ToList();
+            _context.EgitmenHizmetler.RemoveRange(toRemove);
+
+            var existingIds = egitmen.EgitmenHizmetler.Select(x => x.HizmetId).ToHashSet();
+            var toAdd = selected.Where(x => !existingIds.Contains(x)).ToList();
+
+            foreach (var hid in toAdd)
+                _context.EgitmenHizmetler.Add(new EgitmenHizmet { EgitmenId = egitmen.Id, HizmetId = hid });
+
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Index));
+        }
+
+        public async Task<IActionResult> Delete(int? id)
+        {
+            if (id == null) return NotFound();
+
+            var egitmen = await _context.Egitmenler
+                .Include(e => e.Salon)
+                .Include(e => e.EgitmenHizmetler).ThenInclude(eh => eh.Hizmet)
+                .AsNoTracking()
+                .FirstOrDefaultAsync(e => e.Id == id);
+
+            if (egitmen == null) return NotFound();
+            return View(egitmen);
+        }
+
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteConfirmed(int id)
+        {
+            var egitmen = await _context.Egitmenler.FindAsync(id);
+            if (egitmen != null)
+            {
+                _context.Egitmenler.Remove(egitmen);
+                await _context.SaveChangesAsync();
+            }
+            return RedirectToAction(nameof(Index));
+        }
+
+        private async Task FillLists(EgitmenFormViewModel vm)
+        {
+            vm.Salonlar = await _context.Salonlar.AsNoTracking()
+                .OrderBy(s => s.Ad)
+                .Select(s => new SelectListItem { Value = s.Id.ToString(), Text = s.Ad })
+                .ToListAsync();
+
+            // Hizmet listesi (ÅŸimdilik tÃ¼m hizmetler; istersen salon filtreleriz)
+            vm.Hizmetler = await _context.Hizmetler.AsNoTracking()
+                .OrderBy(h => h.Ad)
+                .Select(h => new SelectListItem
+                {
+                    Value = h.Id.ToString(),
+                    Text = $"{h.Ad} ({h.SureDakika} dk - {h.Ucret} â‚º)"
+                })
+                .ToListAsync();
+        }
     }
 }

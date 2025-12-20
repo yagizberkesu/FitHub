@@ -1,6 +1,7 @@
 @model FitHub.Models.Egitmen
 @{
     ViewData["Title"] = "Eðitmen Detayý";
+    var hizmetAdlari = Model.EgitmenHizmetler?.Select(x => x.Hizmet?.Ad).Where(x => !string.IsNullOrWhiteSpace(x)).ToList() ?? new List<string>();
 }
 
 <h1 class="mb-4">Eðitmen Detayý</h1>
@@ -17,11 +18,11 @@
             <dt class="col-sm-3">Müsaitlik</dt>
             <dd class="col-sm-9">@Model.MusaitlikBaslangic.ToString("HH:mm") - @Model.MusaitlikBitis.ToString("HH:mm")</dd>
 
-            <dt class="col-sm-3">Uzmanlýk Alanlarý</dt>
+            <dt class="col-sm-3">Uzmanlýk</dt>
             <dd class="col-sm-9">@Model.UzmanlikAlanlari</dd>
 
             <dt class="col-sm-3">Hizmetler</dt>
-            <dd class="col-sm-9">@Model.Hizmetler</dd>
+            <dd class="col-sm-9">@string.Join(", ", hizmetAdlari)</dd>
         </dl>
 
         <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">Düzenle</a>

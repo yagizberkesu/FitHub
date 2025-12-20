@@ -1,19 +1,16 @@
-using System.ComponentModel.DataAnnotations;
+ï»¿using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace FitHub.Models
 {
-    public class Egitmen
+    public class EgitmenFormViewModel
     {
         public int Id { get; set; }
 
         [Required]
-        [StringLength(100)]
         public string Ad { get; set; } = string.Empty;
 
         public string UzmanlikAlanlari { get; set; } = string.Empty;
-
-        // Eskiden string Hizmetler vardýysa tutmak zorunda deðilsin, ama kýrýlmasýn diye býrakýyorum.
-        public string Hizmetler { get; set; } = string.Empty;
 
         public TimeOnly MusaitlikBaslangic { get; set; } = new TimeOnly(9, 0);
         public TimeOnly MusaitlikBitis { get; set; } = new TimeOnly(22, 0);
@@ -21,8 +18,10 @@ namespace FitHub.Models
         [Required]
         public int SalonId { get; set; }
 
-        public Salon? Salon { get; set; }
+        // EÄŸitmenin vereceÄŸi hizmetler (Ã§oklu seÃ§im)
+        public List<int> SelectedHizmetIds { get; set; } = new();
 
-        public ICollection<EgitmenHizmet> EgitmenHizmetler { get; set; } = new List<EgitmenHizmet>();
+        public List<SelectListItem> Salonlar { get; set; } = new();
+        public List<SelectListItem> Hizmetler { get; set; } = new();
     }
 }
