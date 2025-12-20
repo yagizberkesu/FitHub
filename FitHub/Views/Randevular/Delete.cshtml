@@ -1,35 +1,33 @@
 @model FitHub.Models.Randevu
 @{
-    ViewData["Title"] = "Randevu Sil";
+    ViewData["Title"] = "Randevu Ýptal/Sil";
 }
 
-<h1 class="mb-4">Randevu Sil</h1>
+<div class="container py-5 d-flex justify-content-center">
+    <div class="card bg-card border-danger shadow-lg text-center" style="max-width: 500px;">
+        <div class="card-body p-5">
+            <div class="mb-4">
+                <i class="fas fa-calendar-times fa-4x text-danger mb-3"></i>
+                <h3 class="fw-bold text-white">Randevuyu Ýptal Et?</h3>
 
-<div class="alert alert-warning">
-    Bu randevuyu silmek istediðinize emin misiniz?
-</div>
+                <p class="text-muted mb-1">
+                    <span class="text-white fw-bold">@Model.Tarih.ToString("dd.MM.yyyy")</span> tarihindeki
+                </p>
+                <p class="text-warning fs-5 mb-0">
+                    "@Model.Hizmet"
+                </p>
+                <p class="text-muted small mt-2">randevusu silinecek. Bu iþlem geri alýnamaz.</p>
+            </div>
 
-<div class="card mb-3">
-    <div class="card-body">
-        <dl class="row">
-            <dt class="col-sm-3">Üye</dt>
-            <dd class="col-sm-9">@(Model.Uye == null ? "" : $"{Model.Uye.Ad} {Model.Uye.Soyad}")</dd>
-
-            <dt class="col-sm-3">Salon</dt>
-            <dd class="col-sm-9">@Model.Salon?.Ad</dd>
-
-            <dt class="col-sm-3">Eðitmen</dt>
-            <dd class="col-sm-9">@Model.Egitmen?.Ad</dd>
-
-            <dt class="col-sm-3">Tarih / Saat</dt>
-            <dd class="col-sm-9">@Model.Tarih.ToString("yyyy-MM-dd") @Model.Baslangic.ToString("HH:mm")-@Model.Bitis.ToString("HH:mm")</dd>
-        </dl>
+            <form asp-action="Delete">
+                <input type="hidden" asp-for="Id" />
+                <div class="d-grid gap-2">
+                    <button type="submit" class="btn btn-danger btn-lg fw-bold">
+                        <i class="fas fa-trash-alt me-2"></i>Evet, Ýptal Et
+                    </button>
+                    <a asp-action="Index" class="btn btn-outline-light">Vazgeç, Geri Dön</a>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
-
-<form asp-action="Delete" method="post">
-    @Html.AntiForgeryToken()
-    <input type="hidden" asp-for="Id" />
-    <button type="submit" class="btn btn-danger">Sil</button>
-    <a asp-action="Index" class="btn btn-secondary">Ýptal</a>
-</form>

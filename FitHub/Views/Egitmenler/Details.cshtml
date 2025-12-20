@@ -1,31 +1,57 @@
 @model FitHub.Models.Egitmen
+
 @{
-    ViewData["Title"] = "Eðitmen Detayý";
-    var hizmetAdlari = Model.EgitmenHizmetler?.Select(x => x.Hizmet?.Ad).Where(x => !string.IsNullOrWhiteSpace(x)).ToList() ?? new List<string>();
+    ViewData["Title"] = "Eðitmen Detaylarý";
+    // Nullable string hatasýný önleyen güvenli liste
+    var hizmetAdlari = Model.EgitmenHizmetler?
+        .Select(x => x.Hizmet?.Ad ?? "")
+        .Where(x => !string.IsNullOrEmpty(x))
+        .ToList() ?? new List<string>();
 }
 
-<h1 class="mb-4">Eðitmen Detayý</h1>
+<div class="container py-5 d-flex justify-content-center">
+    <div class="card bg-card border-0 shadow-lg w-100" style="max-width: 700px;">
+        <div class="card-header bg-transparent border-bottom border-secondary text-center py-4">
+            <div class="bg-dark border border-warning rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 100px; height: 100px;">
+                <span class="display-4 fw-bold text-warning">@Model.Ad.Substring(0, 1).ToUpper()</span>
+            </div>
+            <h2 class="fw-bold text-white mb-0">@Model.Ad</h2>
+            <p class="text-muted mb-0">@Model.UzmanlikAlanlari</p>
+        </div>
 
-<div class="card">
-    <div class="card-body">
-        <dl class="row">
-            <dt class="col-sm-3">Ad</dt>
-            <dd class="col-sm-9">@Model.Ad</dd>
+        <div class="card-body p-4">
+            <div class="row g-4">
+                <div class="col-6">
+                    <h6 class="text-uppercase text-secondary small fw-bold mb-2">Çalýþtýðý Salon</h6>
+                    <p class="text-white fs-5"><i class="fas fa-building text-warning me-2"></i>@(Model.Salon?.Ad ?? "-")</p>
+                </div>
+                <div class="col-6">
+                    <h6 class="text-uppercase text-secondary small fw-bold mb-2">Mesai Saatleri</h6>
+                    <p class="text-white fs-5"><i class="far fa-clock text-warning me-2"></i>@Model.MusaitlikBaslangic.ToString("HH:mm") - @Model.MusaitlikBitis.ToString("HH:mm")</p>
+                </div>
 
-            <dt class="col-sm-3">Salon</dt>
-            <dd class="col-sm-9">@Model.Salon?.Ad</dd>
+                <div class="col-12">
+                    <h6 class="text-uppercase text-secondary small fw-bold mb-3">Verdiði Hizmetler</h6>
+                    @if (hizmetAdlari.Any())
+                    {
+                            <div class="d-flex flex-wrap gap-2">
+                            @foreach (var hizmet in hizmetAdlari)
+                            {
+                                        <span class="badge bg-dark border border-secondary text-white py-2 px-3 rounded-pill">@hizmet</span>
+                            }
+                            </div>
+                    }
+                    else
+                    {
+                            <p class="text-muted fst-italic">Henüz hizmet tanýmlanmamýþ.</p>
+                    }
+                </div>
+            </div>
+        </div>
 
-            <dt class="col-sm-3">Müsaitlik</dt>
-            <dd class="col-sm-9">@Model.MusaitlikBaslangic.ToString("HH:mm") - @Model.MusaitlikBitis.ToString("HH:mm")</dd>
-
-            <dt class="col-sm-3">Uzmanlýk</dt>
-            <dd class="col-sm-9">@Model.UzmanlikAlanlari</dd>
-
-            <dt class="col-sm-3">Hizmetler</dt>
-            <dd class="col-sm-9">@string.Join(", ", hizmetAdlari)</dd>
-        </dl>
-
-        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">Düzenle</a>
-        <a asp-action="Index" class="btn btn-secondary">Geri</a>
+        <div class="card-footer bg-transparent border-top border-secondary p-4 d-flex justify-content-between">
+            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning fw-bold px-4">Düzenle</a>
+            <a asp-action="Index" class="btn btn-outline-light px-4">Listeye Dön</a>
+        </div>
     </div>
 </div>

@@ -15,302 +15,253 @@ namespace FitHub.Controllers
             _context = context;
         }
 
-        private int? CurrentUserId => HttpContext.Session.GetInt32("UserId");
-        private string CurrentRole => HttpContext.Session.GetString("UserRole") ?? string.Empty;
-        private bool IsAdmin => string.Equals(CurrentRole, "Admin", StringComparison.OrdinalIgnoreCase);
+        // --- YARDIMCI ÖZELLİKLER (Helpers) ---
 
+        // DÜZELTME: Login olurken SetInt32 yaptığın için burada GetInt32 ile okumalıyız.
+        private int? CurrentUserId => HttpContext.Session.GetInt32("UserId");
+
+        // Oturumdaki kullanıcının Admin olup olmadığını kontrol eder
+        private bool IsAdmin
+        {
+            get
+            {
+                var role = HttpContext.Session.GetString("UserRole");
+                return string.Equals(role, "Admin", StringComparison.OrdinalIgnoreCase);
+            }
+        }
+
+        // --- 1. LİSTELEME (INDEX) ---
         public async Task<IActionResult> Index()
         {
+            // Giriş yapmamışsa Login'e at
             if (CurrentUserId == null) return RedirectToAction("Login", "Uye");
 
-            IQueryable<Randevu> q = _context.Randevular
-                .Include(r => r.Uye)
-                .Include(r => r.Egitmen)
+            var query = _context.Randevular
                 .Include(r => r.Salon)
-                .AsNoTracking();
-
-            if (!IsAdmin)
-                q = q.Where(r => r.UyeId == CurrentUserId.Value);
-
-            var list = await q
+                .Include(r => r.Egitmen)
+                .Include(r => r.Uye)
+                .Include(r => r.HizmetRef)
                 .OrderByDescending(r => r.Tarih)
-                .ThenByDescending(r => r.Baslangic)
-                .ToListAsync();
+                .AsQueryable();
 
-            return View(list);
+            // KİLİT NOKTA: Eğer Admin DEĞİLSE, sadece kendi randevularını filtrele
+            // "Başkasının randevusunu görmesin" kuralı burada çalışır.
+            if (!IsAdmin)
+            {
+                // Veritabanındaki UyeId, oturumdaki ID'ye eşit olanları getir
+                query = query.Where(r => r.UyeId == CurrentUserId.Value);
+            }
+
+            // Admin ise 'Where' çalışmaz, tüm liste gelir.
+            return View(await query.ToListAsync());
         }
 
-        // =========================================================
-        // ADMIN ONAY / IPTAL
-        //  - GET gelirse de çalışsın (linke tıklayınca 405 olmasın)
-        //  - POST ile de çalışsın (form kullanınca doğru yol)
-        // =========================================================
-
-        [AdminAuthorize]
-        [HttpGet]
-        public async Task<IActionResult> Approve(int id)
+        // --- 2. DETAYLAR (DETAILS) ---
+        public async Task<IActionResult> Details(int? id)
         {
-            var r = await _context.Randevular.FindAsync(id);
-            if (r == null) return NotFound();
+            if (id == null) return NotFound();
 
-            r.Durum = "Onaylandı";
-            r.Onaylandi = true;
-            await _context.SaveChangesAsync();
+            var randevu = await _context.Randevular
+                .Include(r => r.Salon)
+                .Include(r => r.Egitmen)
+                .Include(r => r.Uye)
+                .Include(r => r.HizmetRef)
+                .FirstOrDefaultAsync(m => m.Id == id);
 
-            return RedirectToAction(nameof(Index));
+            if (randevu == null) return NotFound();
+
+            // Güvenlik: Admin değilse VE randevu kendisine ait değilse göremez
+            if (!IsAdmin && randevu.UyeId != CurrentUserId)
+            {
+                return RedirectToAction("Index");
+            }
+
+            return View(randevu);
         }
 
-        [AdminAuthorize]
-        [HttpPost, ActionName("Approve")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ApprovePost(int id)
-        {
-            var r = await _context.Randevular.FindAsync(id);
-            if (r == null) return NotFound();
-
-            r.Durum = "Onaylandı";
-            r.Onaylandi = true;
-            await _context.SaveChangesAsync();
-
-            return RedirectToAction(nameof(Index));
-        }
-
-        [AdminAuthorize]
-        [HttpGet]
-        public async Task<IActionResult> Cancel(int id)
-        {
-            var r = await _context.Randevular.FindAsync(id);
-            if (r == null) return NotFound();
-
-            r.Durum = "İptal";
-            r.Onaylandi = false;
-            await _context.SaveChangesAsync();
-
-            return RedirectToAction(nameof(Index));
-        }
-
-        [AdminAuthorize]
-        [HttpPost, ActionName("Cancel")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> CancelPost(int id)
-        {
-            var r = await _context.Randevular.FindAsync(id);
-            if (r == null) return NotFound();
-
-            r.Durum = "İptal";
-            r.Onaylandi = false;
-            await _context.SaveChangesAsync();
-
-            return RedirectToAction(nameof(Index));
-        }
-
+        // --- 3. OLUŞTURMA (CREATE - GET) ---
         public async Task<IActionResult> Create()
         {
             if (CurrentUserId == null) return RedirectToAction("Login", "Uye");
 
-            var vm = new RandevuCreateViewModel();
-            await FillDropDowns(vm);
+            var model = new RandevuCreateViewModel
+            {
+                Salonlar = await _context.Salonlar.AsNoTracking()
+                    .Select(s => new SelectListItem { Value = s.Id.ToString(), Text = s.Ad })
+                    .ToListAsync(),
 
-            if (vm.Salonlar.Count > 0) vm.SalonId = int.Parse(vm.Salonlar[0].Value!);
-            if (vm.Egitmenler.Count > 0) vm.EgitmenId = int.Parse(vm.Egitmenler[0].Value!);
+                Egitmenler = new List<SelectListItem>(),
+                Hizmetler = new List<SelectListItem>(),
+                SaatSecenekleri = new List<string>()
+            };
 
-            await FillHizmetler(vm);
-
-            if (vm.Hizmetler.Count > 0) vm.HizmetId = int.Parse(vm.Hizmetler[0].Value!);
-
-            vm.SaatSecenekleri = await ComputeAvailableSlots(vm.SalonId, vm.EgitmenId, vm.Tarih, vm.HizmetId, vm.KisiSayisi);
-            if (vm.SaatSecenekleri.Count > 0) vm.BaslangicStr = vm.SaatSecenekleri[0];
-
-            return View(vm);
+            return View(model);
         }
 
-        // Salon/Eğitmen değişince hizmetleri getir (JSON)
-        [HttpGet]
-        public async Task<IActionResult> GetHizmetler(int salonId, int egitmenId)
-        {
-            var egitmenHizmetleri = await _context.EgitmenHizmetler
-                .AsNoTracking()
-                .Where(x => x.EgitmenId == egitmenId)
-                .Select(x => x.Hizmet!)
-                .Where(h => h.SalonId == salonId)
-                .Select(h => new { h.Id, h.Ad, h.SureDakika, h.Ucret })
-                .ToListAsync();
-
-            if (egitmenHizmetleri.Count > 0)
-                return Json(egitmenHizmetleri);
-
-            var salonHizmetleri = await _context.Hizmetler
-                .AsNoTracking()
-                .Where(h => h.SalonId == salonId)
-                .Select(h => new { h.Id, h.Ad, h.SureDakika, h.Ucret })
-                .ToListAsync();
-
-            return Json(salonHizmetleri);
-        }
-
-        // Uygun saatler
-        [HttpGet]
-        public async Task<IActionResult> GetSlots(int salonId, int egitmenId, string tarih, int hizmetId, int kisiSayisi)
-        {
-            if (CurrentUserId == null) return Unauthorized();
-
-            if (!DateOnly.TryParse(tarih, out var date))
-                return BadRequest("tarih formatı yanlış (yyyy-MM-dd)");
-
-            if (kisiSayisi <= 0) kisiSayisi = 1;
-
-            var slots = await ComputeAvailableSlots(salonId, egitmenId, date, hizmetId, kisiSayisi);
-            return Json(slots);
-        }
-
+        // --- 4. OLUŞTURMA (CREATE - POST) ---
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(RandevuCreateViewModel vm)
+        public async Task<IActionResult> Create(RandevuCreateViewModel model)
         {
             if (CurrentUserId == null) return RedirectToAction("Login", "Uye");
 
-            await FillDropDowns(vm);
-            await FillHizmetler(vm);
-
-            if (!TimeOnly.TryParseExact(vm.BaslangicStr, "HH:mm", out var baslangic))
-                ModelState.AddModelError(nameof(vm.BaslangicStr), "Geçersiz saat seçimi.");
-
-            var hizmet = await _context.Hizmetler.AsNoTracking().FirstOrDefaultAsync(h => h.Id == vm.HizmetId);
-            if (hizmet == null)
-                ModelState.AddModelError(nameof(vm.HizmetId), "Hizmet seçiniz.");
-
-            if (hizmet != null && hizmet.SureDakika % 30 != 0)
-                ModelState.AddModelError(nameof(vm.HizmetId), "Hizmet süresi 30 dakikanın katı olmalı.");
-
             if (!ModelState.IsValid)
             {
-                vm.SaatSecenekleri = await ComputeAvailableSlots(vm.SalonId, vm.EgitmenId, vm.Tarih, vm.HizmetId, vm.KisiSayisi);
-                return View(vm);
+                await FillLists(model);
+                return View(model);
             }
 
-            var sure = hizmet!.SureDakika;
-            var bitis = baslangic.AddMinutes(sure);
-
-            var available = await ComputeAvailableSlots(vm.SalonId, vm.EgitmenId, vm.Tarih, vm.HizmetId, vm.KisiSayisi);
-            if (!available.Contains(vm.BaslangicStr))
+            if (!TimeOnly.TryParse(model.BaslangicStr, out TimeOnly baslangicSaat))
             {
-                ModelState.AddModelError("", "Seçtiğiniz saat artık uygun değil. Lütfen tekrar seçin.");
-                vm.SaatSecenekleri = available;
-                return View(vm);
+                ModelState.AddModelError("", "Geçersiz saat formatı.");
+                await FillLists(model);
+                return View(model);
             }
 
-            var entity = new Randevu
+            var hizmet = await _context.Hizmetler.FindAsync(model.HizmetId);
+            if (hizmet == null)
             {
-                SalonId = vm.SalonId,
-                EgitmenId = vm.EgitmenId,
+                ModelState.AddModelError("", "Hizmet bulunamadı.");
+                await FillLists(model);
+                return View(model);
+            }
+
+            var randevu = new Randevu
+            {
                 UyeId = CurrentUserId.Value,
-                Tarih = vm.Tarih,
-                Baslangic = baslangic,
-                Bitis = bitis,
-                Sure = sure,
-                KisiSayisi = vm.KisiSayisi,
-                HizmetId = vm.HizmetId,
+                SalonId = model.SalonId ?? 0,
+                EgitmenId = model.EgitmenId ?? 0,
+                HizmetId = hizmet.Id,
                 Hizmet = hizmet.Ad,
+                Tarih = DateOnly.FromDateTime(model.Tarih),
+                Baslangic = baslangicSaat,
+                Bitis = baslangicSaat.AddMinutes(hizmet.SureDakika),
+                Sure = hizmet.SureDakika,
                 Ucret = hizmet.Ucret,
-                Durum = "Beklemede",
-                Onaylandi = false
+                KisiSayisi = model.KisiSayisi,
+                Durum = "Beklemede"
             };
 
-            _context.Randevular.Add(entity);
+            _context.Randevular.Add(randevu);
             await _context.SaveChangesAsync();
+
             return RedirectToAction(nameof(Index));
         }
 
-        private async Task FillDropDowns(RandevuCreateViewModel vm)
+        // --- 5. SİLME (DELETE - GET) ---
+        public async Task<IActionResult> Delete(int? id)
         {
-            vm.Salonlar = await _context.Salonlar
-                .AsNoTracking()
-                .OrderBy(s => s.Ad)
-                .Select(s => new SelectListItem { Value = s.Id.ToString(), Text = s.Ad })
-                .ToListAsync();
+            if (id == null) return NotFound();
 
-            vm.Egitmenler = await _context.Egitmenler
-                .AsNoTracking()
-                .OrderBy(e => e.Ad)
-                .Select(e => new SelectListItem { Value = e.Id.ToString(), Text = e.Ad })
-                .ToListAsync();
-        }
+            var randevu = await _context.Randevular.FindAsync(id);
+            if (randevu == null) return NotFound();
 
-        private async Task FillHizmetler(RandevuCreateViewModel vm)
-        {
-            var q = _context.EgitmenHizmetler
-                .AsNoTracking()
-                .Where(x => x.EgitmenId == vm.EgitmenId)
-                .Select(x => x.Hizmet!)
-                .Where(h => h.SalonId == vm.SalonId);
-
-            var list = await q.ToListAsync();
-
-            if (list.Count == 0)
+            // Güvenlik: Başkasının randevusunu silemesin
+            if (!IsAdmin && randevu.UyeId != CurrentUserId)
             {
-                list = await _context.Hizmetler.AsNoTracking()
-                    .Where(h => h.SalonId == vm.SalonId)
-                    .ToListAsync();
+                return RedirectToAction("Index");
             }
 
-            vm.Hizmetler = list
-                .OrderBy(h => h.Ad)
-                .Select(h => new SelectListItem
-                {
-                    Value = h.Id.ToString(),
-                    Text = $"{h.Ad} ({h.SureDakika} dk - {h.Ucret} ₺)"
-                })
-                .ToList();
+            return View(randevu);
         }
 
-        private static bool Overlaps(TimeOnly aStart, TimeOnly aEnd, TimeOnly bStart, TimeOnly bEnd)
-            => aStart < bEnd && aEnd > bStart;
-
-        private async Task<List<string>> ComputeAvailableSlots(int salonId, int egitmenId, DateOnly tarih, int hizmetId, int kisiSayisi)
+        // --- 6. SİLME ONAY (DELETE - POST) ---
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var salon = await _context.Salonlar.AsNoTracking().FirstOrDefaultAsync(s => s.Id == salonId);
-            var egitmen = await _context.Egitmenler.AsNoTracking().FirstOrDefaultAsync(e => e.Id == egitmenId);
-            var hizmet = await _context.Hizmetler.AsNoTracking().FirstOrDefaultAsync(h => h.Id == hizmetId);
+            var randevu = await _context.Randevular.FindAsync(id);
+            if (randevu != null)
+            {
+                if (!IsAdmin && randevu.UyeId != CurrentUserId)
+                {
+                    return RedirectToAction("Index");
+                }
 
-            if (salon == null || egitmen == null || hizmet == null) return new List<string>();
+                // Admin silebilir, Üye iptal edebilir
+                if (!IsAdmin)
+                {
+                    randevu.Durum = "İptal";
+                    randevu.Onaylandi = false;
+                }
+                else
+                {
+                    _context.Randevular.Remove(randevu);
+                }
 
-            var sure = hizmet.SureDakika;
-            if (sure <= 0 || sure % 30 != 0) return new List<string>();
+                await _context.SaveChangesAsync();
+            }
+            return RedirectToAction(nameof(Index));
+        }
 
-            var start = salon.CalismaBaslangic > egitmen.MusaitlikBaslangic ? salon.CalismaBaslangic : egitmen.MusaitlikBaslangic;
-            var end = salon.CalismaBitis < egitmen.MusaitlikBitis ? salon.CalismaBitis : egitmen.MusaitlikBitis;
+        // --- AJAX & YARDIMCI METOTLAR ---
 
-            if (start.AddMinutes(sure) > end) return new List<string>();
-
-            var existingSalon = await _context.Randevular
-                .AsNoTracking()
-                .Where(r => r.SalonId == salonId && r.Tarih == tarih && r.Durum != "İptal")
-                .Select(r => new { r.Baslangic, r.Bitis, r.KisiSayisi })
+        public async Task<JsonResult> GetEgitmenler(int salonId)
+        {
+            var data = await _context.Egitmenler
+                .Where(e => e.SalonId == salonId)
+                .Select(e => new { id = e.Id, ad = e.Ad })
                 .ToListAsync();
+            return Json(data);
+        }
 
-            var existingEgitmen = await _context.Randevular
-                .AsNoTracking()
-                .Where(r => r.EgitmenId == egitmenId && r.Tarih == tarih && r.Durum != "İptal")
-                .Select(r => new { r.Baslangic, r.Bitis })
+        public async Task<JsonResult> GetHizmetler(int egitmenId)
+        {
+            var data = await _context.EgitmenHizmetler
+                .Where(eh => eh.EgitmenId == egitmenId)
+                .Include(eh => eh.Hizmet)
+                .Select(eh => new {
+                    id = eh.Hizmet.Id,
+                    ad = eh.Hizmet.Ad,
+                    sure = eh.Hizmet.SureDakika,
+                    ucret = eh.Hizmet.Ucret
+                })
                 .ToListAsync();
+            return Json(data);
+        }
+
+        public async Task<JsonResult> GetSlots(int salonId, int egitmenId, DateTime tarih, int hizmetId)
+        {
+            var egitmen = await _context.Egitmenler.FindAsync(egitmenId);
+            var hizmet = await _context.Hizmetler.FindAsync(hizmetId);
+
+            if (egitmen == null || hizmet == null) return Json(new List<string>());
 
             var slots = new List<string>();
+            var start = egitmen.MusaitlikBaslangic;
+            var end = egitmen.MusaitlikBitis;
+            var tarihDateOnly = DateOnly.FromDateTime(tarih);
 
-            for (var t = start; t.AddMinutes(sure) <= end; t = t.AddMinutes(30))
+            var existingRandevular = await _context.Randevular
+                .Where(r => r.EgitmenId == egitmenId
+                            && r.Tarih == tarihDateOnly
+                            && r.Durum != "İptal")
+                .ToListAsync();
+
+            while (start.AddMinutes(hizmet.SureDakika) <= end)
             {
-                var tEnd = t.AddMinutes(sure);
+                var slotEnd = start.AddMinutes(hizmet.SureDakika);
+                bool isTaken = existingRandevular.Any(r =>
+                    (start >= r.Baslangic && start < r.Bitis) ||
+                    (slotEnd > r.Baslangic && slotEnd <= r.Bitis) ||
+                    (start <= r.Baslangic && slotEnd >= r.Bitis)
+                );
 
-                if (existingEgitmen.Any(x => Overlaps(t, tEnd, x.Baslangic, x.Bitis)))
-                    continue;
-
-                var dolu = existingSalon.Where(x => Overlaps(t, tEnd, x.Baslangic, x.Bitis)).Sum(x => x.KisiSayisi);
-                if (dolu + kisiSayisi > salon.Kontenjan)
-                    continue;
-
-                slots.Add(t.ToString("HH:mm"));
+                if (!isTaken) slots.Add(start.ToString("HH:mm"));
+                start = start.AddMinutes(30);
             }
 
-            return slots;
+            return Json(slots);
+        }
+
+        private async Task FillLists(RandevuCreateViewModel model)
+        {
+            model.Salonlar = await _context.Salonlar.Select(s => new SelectListItem { Value = s.Id.ToString(), Text = s.Ad }).ToListAsync();
+            if (model.SalonId.HasValue)
+            {
+                model.Egitmenler = await _context.Egitmenler.Where(e => e.SalonId == model.SalonId)
+                    .Select(e => new SelectListItem { Value = e.Id.ToString(), Text = e.Ad }).ToListAsync();
+            }
         }
     }
 }

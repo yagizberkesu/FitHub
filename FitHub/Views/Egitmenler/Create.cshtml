@@ -1,130 +1,86 @@
 @model FitHub.Models.EgitmenFormViewModel
 @{
-    ViewData["Title"] = "Eðitmen Ekle";
+    ViewData["Title"] = "Yeni Eðitmen";
 }
 
-<h1 class="mb-4">Eðitmen Ekle</h1>
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card bg-card border-0 shadow-lg">
+                <div class="card-header bg-transparent border-bottom border-secondary py-3">
+                    <h3 class="fw-bold text-white mb-0"><i class="fas fa-user-ninja text-warning me-2"></i>Yeni Eðitmen Tanýmla</h3>
+                </div>
+                <div class="card-body p-4">
+                    <form asp-action="Create">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
 
-<form asp-action="Create" method="post">
-    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <label asp-for="Ad" class="form-label text-muted small">Ad Soyad</label>
+                                <input asp-for="Ad" class="form-control" placeholder="Örn: Ahmet Yýlmaz" />
+                                <span asp-validation-for="Ad" class="text-danger small"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="SalonId" class="form-label text-muted small">Çalýþtýðý Salon</label>
+                                <select asp-for="SalonId" class="form-select" asp-items="Model.Salonlar"></select>
+                            </div>
+                        </div>
 
-    <div class="mb-3">
-        <label asp-for="Ad" class="form-label"></label>
-        <input asp-for="Ad" class="form-control" />
-        <span asp-validation-for="Ad" class="text-danger"></span>
-    </div>
+                        <div class="mb-4">
+                            <label asp-for="UzmanlikAlanlari" class="form-label text-muted small">Uzmanlýk Alanlarý</label>
+                            <input asp-for="UzmanlikAlanlari" class="form-control" placeholder="Örn: Pilates, Crossfit, Boks" />
+                            <span asp-validation-for="UzmanlikAlanlari" class="text-danger small"></span>
+                        </div>
 
-    <div class="mb-3">
-        <label asp-for="UzmanlikAlanlari" class="form-label">Uzmanlýk Alanlarý</label>
-        <input asp-for="UzmanlikAlanlari" class="form-control" />
-    </div>
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <label asp-for="MusaitlikBaslangic" class="form-label text-muted small">Mesai Baþlangýç</label>
+                                <input asp-for="MusaitlikBaslangic" type="time" class="form-control" />
+                                <span asp-validation-for="MusaitlikBaslangic" class="text-danger small"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="MusaitlikBitis" class="form-label text-muted small">Mesai Bitiþ</label>
+                                <input asp-for="MusaitlikBitis" type="time" class="form-control" />
+                                <span asp-validation-for="MusaitlikBitis" class="text-danger small"></span>
+                            </div>
+                        </div>
 
-    <!-- Müsaitlik Saatleri (00/30) -->
-    <div class="row">
-        <div class="col-md-6 mb-3">
-            <label class="form-label">Müsaitlik Baþlangýç</label>
+                        @if (Model.Hizmetler != null && Model.Hizmetler.Any())
+                        {
+                                <div class="mb-4">
+                                    <label class="form-label text-muted small d-block">Verebileceði Hizmetler</label>
+                                    <div class="card bg-dark border border-secondary p-3" style="max-height: 200px; overflow-y: auto;">
+                                    @foreach (var h in Model.Hizmetler)
+                                    {
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" name="SelectedHizmetIds" value="@h.Value" id="hizmet_@h.Value" 
+                                            @(h.Selected ? "checked" : "")>
+                                                    <label class="form-check-label text-white" for="hizmet_@h.Value">
+                                                @h.Text
+                                                    </label>
+                                                </div>
+                                    }
+                                    </div>
+                                </div>
+                        }
+                        else
+                        {
+                                <div class="alert alert-warning small">
+                                    <i class="fas fa-exclamation-triangle me-2"></i>Önce sisteme hizmet eklemelisiniz.
+                                </div>
+                        }
 
-            <input type="hidden" asp-for="MusaitlikBaslangic" id="MusaitBaslangicHidden" />
-
-            <div class="d-flex gap-2">
-                <select class="form-select" id="MusaitBaslangicHour" style="max-width:120px">
-                    @for (var h = 0; h < 24; h++)
-                    {
-                        var hh = h.ToString("D2");
-                            <option value="@hh">@hh</option>
-                    }
-                </select>
-
-                <select class="form-select" id="MusaitBaslangicMin" style="max-width:120px">
-                    <option value="00">00</option>
-                    <option value="30">30</option>
-                </select>
+                        <div class="d-flex justify-content-between pt-3 border-top border-secondary">
+                            <a asp-action="Index" class="btn btn-outline-light px-4">Geri Dön</a>
+                            <button type="submit" class="btn btn-accent px-5 fw-bold shadow">KAYDET</button>
+                        </div>
+                    </form>
+                </div>
             </div>
-
-            <div class="form-text">Dakika sadece 00 veya 30.</div>
-            <span asp-validation-for="MusaitlikBaslangic" class="text-danger"></span>
-        </div>
-
-        <div class="col-md-6 mb-3">
-            <label class="form-label">Müsaitlik Bitiþ</label>
-
-            <input type="hidden" asp-for="MusaitlikBitis" id="MusaitBitisHidden" />
-
-            <div class="d-flex gap-2">
-                <select class="form-select" id="MusaitBitisHour" style="max-width:120px">
-                    @for (var h = 0; h < 24; h++)
-                    {
-                        var hh = h.ToString("D2");
-                            <option value="@hh">@hh</option>
-                    }
-                </select>
-
-                <select class="form-select" id="MusaitBitisMin" style="max-width:120px">
-                    <option value="00">00</option>
-                    <option value="30">30</option>
-                </select>
-            </div>
-
-            <div class="form-text">Dakika sadece 00 veya 30.</div>
-            <span asp-validation-for="MusaitlikBitis" class="text-danger"></span>
         </div>
     </div>
-
-    <div class="mb-3">
-        <label asp-for="SalonId" class="form-label">Salon</label>
-        <select asp-for="SalonId" class="form-select" asp-items="Model.Salonlar"></select>
-        <span asp-validation-for="SalonId" class="text-danger"></span>
-    </div>
-
-    <div class="mb-3">
-        <label class="form-label">Eðitmenin Vereceði Hizmetler (çoklu seçim)</label>
-        <select asp-for="SelectedHizmetIds" class="form-select" asp-items="Model.Hizmetler" multiple size="8"></select>
-        <div class="form-text">Ctrl ile çoklu seçim yapabilirsin.</div>
-    </div>
-
-    <button type="submit" class="btn btn-primary">Kaydet</button>
-    <a asp-action="Index" class="btn btn-secondary">Geri</a>
-</form>
+</div>
 
 @section Scripts {
-        <partial name="_ValidationScriptsPartial" />
-        <script>
-            function setFromHidden(hiddenId, hourId, minId, fallback) {
-                const hidden = document.getElementById(hiddenId);
-                const hour = document.getElementById(hourId);
-                const min = document.getElementById(minId);
-
-                let v = hidden.value;
-                if (v && v.length >= 5) v = v.substring(0, 5);
-                if (!v || v.length < 5) v = fallback;
-
-                const hh = v.substring(0, 2);
-                const mm = v.substring(3, 5);
-
-                hour.value = hh;
-                min.value = (mm === "30") ? "30" : "00";
-
-                hidden.value = `${hour.value}:${min.value}`;
-            }
-
-            function bind(hiddenId, hourId, minId) {
-                const hidden = document.getElementById(hiddenId);
-                const hour = document.getElementById(hourId);
-                const min = document.getElementById(minId);
-
-                function sync() {
-                    hidden.value = `${hour.value}:${min.value}`;
-                }
-
-                hour.addEventListener("change", sync);
-                min.addEventListener("change", sync);
-                sync();
-            }
-
-            setFromHidden("MusaitBaslangicHidden", "MusaitBaslangicHour", "MusaitBaslangicMin", "09:00");
-            setFromHidden("MusaitBitisHidden", "MusaitBitisHour", "MusaitBitisMin", "22:00");
-
-            bind("MusaitBaslangicHidden", "MusaitBaslangicHour", "MusaitBaslangicMin");
-            bind("MusaitBitisHidden", "MusaitBitisHour", "MusaitBitisMin");
-        </script>
-}
+ <partial name="_ValidationScriptsPartial" />
+ }

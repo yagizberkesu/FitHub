@@ -1,129 +1,61 @@
 ﻿@model FitHub.Models.Salon
 @{
-    ViewData["Title"] = "Salon Ekle";
+    ViewData["Title"] = "Yeni Salon Ekle";
 }
 
-<h1 class="mb-4">Salon Ekle</h1>
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card bg-card border-0 shadow-lg">
+                <div class="card-header bg-transparent border-bottom border-secondary py-3">
+                    <h3 class="fw-bold text-white mb-0"><i class="fas fa-building text-warning me-2"></i>Yeni Salon Ekle</h3>
+                </div>
+                <div class="card-body p-4">
+                    <form asp-action="Create">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
 
-<form asp-action="Create" method="post">
-    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+                        <div class="mb-4">
+                            <label asp-for="Ad" class="form-label text-muted small">Salon Adı</label>
+                            <input asp-for="Ad" class="form-control" placeholder="Örn: FitHub Merkez Şube" />
+                            <span asp-validation-for="Ad" class="text-danger small"></span>
+                        </div>
 
-    <div class="mb-3">
-        <label asp-for="Ad" class="form-label">Salon Adı</label>
-        <input asp-for="Ad" class="form-control" />
-        <span asp-validation-for="Ad" class="text-danger"></span>
-    </div>
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <label asp-for="CalismaBaslangic" class="form-label text-muted small">Açılış Saati</label>
+                                <input asp-for="CalismaBaslangic" type="time" class="form-control" />
+                                <span asp-validation-for="CalismaBaslangic" class="text-danger small"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="CalismaBitis" class="form-label text-muted small">Kapanış Saati</label>
+                                <input asp-for="CalismaBitis" type="time" class="form-control" />
+                                <span asp-validation-for="CalismaBitis" class="text-danger small"></span>
+                            </div>
+                        </div>
 
-    <!-- Çalışma Saatleri (00/30) -->
-    <div class="row">
-        <div class="col-md-6 mb-3">
-            <label class="form-label">Çalışma Başlangıç</label>
+                        <div class="mb-4">
+                            <label asp-for="Kontenjan" class="form-label text-muted small">Anlık Kapasite (Kişi)</label>
+                            <input asp-for="Kontenjan" type="number" class="form-control" />
+                            <span asp-validation-for="Kontenjan" class="text-danger small"></span>
+                        </div>
 
-            <input type="hidden" asp-for="CalismaBaslangic" id="CalismaBaslangicHidden" />
+                        <div class="mb-4">
+                            <label asp-for="Hizmetler" class="form-label text-muted small">Hizmetler (Metin Olarak)</label>
+                            <textarea asp-for="Hizmetler" class="form-control" rows="3" placeholder="Fitness, Havuz, Sauna vb."></textarea>
+                            <span asp-validation-for="Hizmetler" class="text-danger small"></span>
+                        </div>
 
-            <div class="d-flex gap-2">
-                <select class="form-select" id="CalismaBaslangicHour" style="max-width:120px">
-                    @for (var h = 0; h < 24; h++)
-                    {
-                        var hh = h.ToString("D2");
-                            <option value="@hh">@hh</option>
-                    }
-                </select>
-
-                <select class="form-select" id="CalismaBaslangicMin" style="max-width:120px">
-                    <option value="00">00</option>
-                    <option value="30">30</option>
-                </select>
+                        <div class="d-flex justify-content-between pt-3 border-top border-secondary">
+                            <a asp-action="Index" class="btn btn-outline-light px-4">Geri Dön</a>
+                            <button type="submit" class="btn btn-accent px-5 fw-bold shadow">KAYDET</button>
+                        </div>
+                    </form>
+                </div>
             </div>
-
-            <div class="form-text">Dakika sadece 00 veya 30.</div>
-            <span asp-validation-for="CalismaBaslangic" class="text-danger"></span>
-        </div>
-
-        <div class="col-md-6 mb-3">
-            <label class="form-label">Çalışma Bitiş</label>
-
-            <input type="hidden" asp-for="CalismaBitis" id="CalismaBitisHidden" />
-
-            <div class="d-flex gap-2">
-                <select class="form-select" id="CalismaBitisHour" style="max-width:120px">
-                    @for (var h = 0; h < 24; h++)
-                    {
-                        var hh = h.ToString("D2");
-                            <option value="@hh">@hh</option>
-                    }
-                </select>
-
-                <select class="form-select" id="CalismaBitisMin" style="max-width:120px">
-                    <option value="00">00</option>
-                    <option value="30">30</option>
-                </select>
-            </div>
-
-            <div class="form-text">Dakika sadece 00 veya 30.</div>
-            <span asp-validation-for="CalismaBitis" class="text-danger"></span>
         </div>
     </div>
-
-    <div class="mb-3">
-        <label asp-for="Kontenjan" class="form-label">Kontenjan</label>
-        <input asp-for="Kontenjan" type="number" min="1" class="form-control" />
-        <span asp-validation-for="Kontenjan" class="text-danger"></span>
-    </div>
-
-    <div class="mb-3">
-        <label asp-for="Hizmetler" class="form-label">Hizmetler</label>
-        <input asp-for="Hizmetler" class="form-control" />
-        <span asp-validation-for="Hizmetler" class="text-danger"></span>
-    </div>
-
-    <button type="submit" class="btn btn-primary">Kaydet</button>
-    <a asp-action="Index" class="btn btn-secondary">Geri</a>
-</form>
+</div>
 
 @section Scripts {
-        <partial name="_ValidationScriptsPartial" />
-        <script>
-            function setFromHidden(hiddenId, hourId, minId, fallback) {
-                const hidden = document.getElementById(hiddenId);
-                const hour = document.getElementById(hourId);
-                const min = document.getElementById(minId);
-
-                let v = hidden.value;
-
-                // TimeOnly bazen "HH:mm:ss" gibi gelebilir → ilk 5 karakteri al
-                if (v && v.length >= 5) v = v.substring(0, 5);
-
-                if (!v || v.length < 5) v = fallback; // örn "09:00"
-
-                const hh = v.substring(0, 2);
-                const mm = v.substring(3, 5);
-
-                hour.value = hh;
-                min.value = (mm === "30") ? "30" : "00";
-
-                hidden.value = `${hour.value}:${min.value}`;
-            }
-
-            function bind(hiddenId, hourId, minId) {
-                const hidden = document.getElementById(hiddenId);
-                const hour = document.getElementById(hourId);
-                const min = document.getElementById(minId);
-
-                function sync() {
-                    hidden.value = `${hour.value}:${min.value}`;
-                }
-
-                hour.addEventListener("change", sync);
-                min.addEventListener("change", sync);
-                sync();
-            }
-
-            // Başlangıç/Bitiş varsayılanları
-            setFromHidden("CalismaBaslangicHidden", "CalismaBaslangicHour", "CalismaBaslangicMin", "09:00");
-            setFromHidden("CalismaBitisHidden", "CalismaBitisHour", "CalismaBitisMin", "22:00");
-
-            bind("CalismaBaslangicHidden", "CalismaBaslangicHour", "CalismaBaslangicMin");
-            bind("CalismaBitisHidden", "CalismaBitisHour", "CalismaBitisMin");
-        </script>
-}
+ <partial name="_ValidationScriptsPartial" />
+ }

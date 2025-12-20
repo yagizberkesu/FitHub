@@ -1,33 +1,24 @@
 ﻿@model FitHub.Models.Hizmet
 @{
-    ViewData["Title"] = "Hizmet Sil";
+    ViewData["Title"] = "Sil";
 }
 
-<h1 class="mb-4">Hizmet Sil</h1>
+<div class="container py-5 d-flex justify-content-center">
+    <div class="card bg-card border-danger shadow-lg text-center" style="max-width: 500px;">
+        <div class="card-body p-5">
+            <div class="mb-4">
+                <i class="fas fa-exclamation-triangle fa-4x text-danger mb-3"></i>
+                <h3 class="fw-bold text-white">Bu Kaydı Silmek İstiyor musunuz?</h3>
+                <p class="text-muted">"@Model.Ad" silinecek. Bu işlem geri alınamaz.</p>
+            </div>
 
-<div class="alert alert-warning">Bu hizmeti silmek istediğinize emin misiniz?</div>
-
-<div class="card mb-3">
-    <div class="card-body">
-        <dl class="row">
-            <dt class="col-sm-3">Ad</dt>
-            <dd class="col-sm-9">@Model.Ad</dd>
-
-            <dt class="col-sm-3">Salon</dt>
-            <dd class="col-sm-9">@Model.Salon?.Ad</dd>
-
-            <dt class="col-sm-3">Süre</dt>
-            <dd class="col-sm-9">@Model.SureDakika dk</dd>
-
-            <dt class="col-sm-3">Ücret</dt>
-            <dd class="col-sm-9">@Model.Ucret ₺</dd>
-        </dl>
+            <form asp-action="Delete">
+                <input type="hidden" asp-for="Id" />
+                <div class="d-grid gap-2">
+                    <button type="submit" class="btn btn-danger btn-lg fw-bold">Evet, Sil</button>
+                    <a asp-action="Index" class="btn btn-outline-light">İptal, Geri Dön</a>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
-
-<form asp-action="Delete" method="post">
-    @Html.AntiForgeryToken()
-    <input type="hidden" asp-for="Id" />
-    <button type="submit" class="btn btn-danger">Sil</button>
-    <a asp-action="Index" class="btn btn-secondary">İptal</a>
-</form>

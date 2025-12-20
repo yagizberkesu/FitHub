@@ -4,170 +4,136 @@
     var result = ViewBag.Result as string;
 }
 
-<div class="container py-4">
-    <div class="card bg-dark text-white shadow-lg">
-        <div class="card-body">
-            <h2 class="mb-3 text-danger">AI KOÇTAN DESTEK</h2>
-            <p class="text-muted">
-                Bilgileri gir, sana uygun planı al.
-            </p>
-
-
 <style>
-    .ai-wrapper {
-        max-width: 900px;
-        margin: auto;
-    }
-
-    .ai-header {
-        background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    .form-control, .form-select {
+        background-color: #2c2c2c;
+        border: 1px solid #444;
         color: #fff;
-        border-radius: 16px;
-        padding: 24px;
-        margin-bottom: 20px;
-        box-shadow: 0 15px 40px rgba(0,0,0,.15);
     }
-
-    .ai-card {
-        border-radius: 16px;
-        box-shadow: 0 10px 30px rgba(0,0,0,.08);
-        border: none;
+    .form-control:focus, .form-select:focus {
+        background-color: #333;
+        color: #fff;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 0.25rem rgba(255, 193, 7, 0.25);
     }
-
-    .ai-card label {
-        font-weight: 500;
-    }
-
-    .ai-result {
-        background: #0f172a;
-        color: #e5e7eb;
-        border-radius: 16px;
-        padding: 20px;
-        margin-top: 24px;
-        box-shadow: 0 10px 30px rgba(0,0,0,.15);
-    }
-
-    .ai-result h5 {
-        color: #a5b4fc;
-    }
-
-    .ai-result pre {
-        white-space: pre-wrap;
-        margin: 0;
-        font-family: Consolas, monospace;
-        font-size: 14px;
+    .ai-header-card {
+        background: linear-gradient(135deg, #1e1e1e 0%, #2a2a2a 100%);
+        border-left: 5px solid var(--primary-color);
     }
 </style>
 
-<div class="ai-wrapper">
+<div class="container py-5">
 
-    <div class="ai-header">
-        <h2 class="mb-1">🤖 AI Koç</h2>
-        <p class="mb-0 opacity-75">
-            Bilgileri doldur, hedeflerine uygun **kişisel antrenman planını** anında al.
-        </p>
+    <div class="card ai-header-card shadow-lg mb-4 text-white">
+        <div class="card-body p-4 d-flex align-items-center justify-content-between flex-wrap">
+            <div>
+                <h2 class="fw-bold mb-1"><i class="fas fa-robot text-warning me-2"></i>AI Antrenör</h2>
+                <p class="mb-0 text-muted">Fiziksel özelliklerini gir, yapay zeka sana özel antrenman programını hazırlasın.</p>
+            </div>
+            <i class="fas fa-dumbbell fa-4x text-muted opacity-25 d-none d-md-block"></i>
+        </div>
     </div>
 
-    <form asp-action="Koc" method="post" class="ai-card p-4">
-        @Html.AntiForgeryToken()
-        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="card bg-card shadow border-0">
+                <div class="card-body p-4">
+                    <form asp-action="Koc" method="post">
+                        @Html.AntiForgeryToken()
 
-        <div class="row">
-            <div class="col-md-2 mb-3">
-                <label>Yaş</label>
-                <input asp-for="Yas" class="form-control" type="number" />
-                <span asp-validation-for="Yas" class="text-danger"></span>
-            </div>
-            <div class="col-md-2 mb-3">
-                <label>Boy (cm)</label>
-                <input asp-for="BoyCm" class="form-control" type="number" />
-                <span asp-validation-for="BoyCm" class="text-danger"></span>
-            </div>
-            <div class="col-md-2 mb-3">
-                <label>Kilo (kg)</label>
-                <input asp-for="KiloKg" class="form-control" type="number" />
-                <span asp-validation-for="KiloKg" class="text-danger"></span>
-            </div>
-            <div class="col-md-3 mb-3">
-                <label>Haftada Gün</label>
-                <input asp-for="HaftadaGun" class="form-control" type="number" />
-                <span asp-validation-for="HaftadaGun" class="text-danger"></span>
-            </div>
-            <div class="col-md-3 mb-3">
-                <label>Süre (dk)</label>
-                <input asp-for="Dakika" class="form-control" type="number" />
-                <span asp-validation-for="Dakika" class="text-danger"></span>
+                        <div class="row g-3">
+                            <div class="col-12"><h5 class="text-warning mb-3 border-bottom border-secondary pb-2">1. Vücut Analizi</h5></div>
+
+                            <div class="col-md-4">
+                                <label class="form-label text-muted small">Yaş</label>
+                                <input asp-for="Yas" class="form-control" placeholder="Örn: 24" type="number" />
+                                <span asp-validation-for="Yas" class="text-danger small"></span>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label text-muted small">Boy (cm)</label>
+                                <input asp-for="BoyCm" class="form-control" placeholder="Örn: 180" type="number" />
+                                <span asp-validation-for="BoyCm" class="text-danger small"></span>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label text-muted small">Kilo (kg)</label>
+                                <input asp-for="KiloKg" class="form-control" placeholder="Örn: 75" type="number" />
+                                <span asp-validation-for="KiloKg" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-12 mt-4"><h5 class="text-warning mb-3 border-bottom border-secondary pb-2">2. Hedef & Durum</h5></div>
+
+                            <div class="col-md-6">
+                                <label class="form-label text-muted small">Haftalık Antrenman Sayısı</label>
+                                <input asp-for="HaftadaGun" class="form-control" placeholder="Gün sayısı" type="number" />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label text-muted small">Antrenman Süresi (dk)</label>
+                                <input asp-for="Dakika" class="form-control" placeholder="Örn: 45" type="number" />
+                            </div>
+
+                            <div class="col-md-4">
+                                <label class="form-label text-muted small">Ana Hedef</label>
+                                <select asp-for="Hedef" class="form-select">
+                                    <option>Kas kazanımı</option>
+                                    <option>Yağ yakımı</option>
+                                    <option>Form koruma</option>
+                                    <option>Kondisyon</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label text-muted small">Seviye</label>
+                                <select asp-for="Seviye" class="form-select">
+                                    <option>Başlangıç</option>
+                                    <option>Orta</option>
+                                    <option>İleri</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label text-muted small">Ekipman Durumu</label>
+                                <select asp-for="Ekipman" class="form-select">
+                                    <option>Salon</option>
+                                    <option>Ev (dambıl)</option>
+                                    <option>Ev (ekipmansız)</option>
+                                </select>
+                            </div>
+
+                            <div class="col-12 mt-3">
+                                <label class="form-label text-muted small">Ek Notlar / Sakatlık Durumu</label>
+                                <textarea asp-for="Notlar" class="form-control" rows="2" placeholder="Varsa sakatlıklarınızı veya özel isteklerinizi belirtin..."></textarea>
+                            </div>
+
+                            <div class="col-12 mt-4 text-center">
+                                <button type="submit" class="btn btn-accent btn-lg w-100 py-3 shadow">
+                                    <i class="fas fa-magic me-2"></i>PROGRAMI OLUŞTUR
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
-
-        <div class="row">
-            <div class="col-md-4 mb-3">
-                <label>Hedef</label>
-                <select asp-for="Hedef" class="form-select">
-                    <option>Kas kazanımı</option>
-                    <option>Yağ yakımı</option>
-                    <option>Form koruma</option>
-                    <option>Kondisyon</option>
-                </select>
-                <span asp-validation-for="Hedef" class="text-danger"></span>
-            </div>
-            <div class="col-md-4 mb-3">
-                <label>Seviye</label>
-                <select asp-for="Seviye" class="form-select">
-                    <option>Başlangıç</option>
-                    <option>Orta</option>
-                    <option>İleri</option>
-                </select>
-                <span asp-validation-for="Seviye" class="text-danger"></span>
-            </div>
-            <div class="col-md-4 mb-3">
-                <label>Ekipman</label>
-                <select asp-for="Ekipman" class="form-select">
-                    <option>Salon</option>
-                    <option>Ev (dambıl)</option>
-                    <option>Ev (ekipmansız)</option>
-                </select>
-                <span asp-validation-for="Ekipman" class="text-danger"></span>
-            </div>
-        </div>
-
-        <div class="mb-3">
-            <label>Notlar (opsiyonel)</label>
-            <textarea asp-for="Notlar" class="form-control" rows="2"
-                      placeholder="Örn: bel ağrısı, diz hassasiyeti..."></textarea>
-            <span asp-validation-for="Notlar" class="text-danger"></span>
-        </div>
-
-        <button class="btn btn-primary px-4 py-2" type="submit">
-            🚀 AI’dan Program Al
-        </button>
-    </form>
+    </div>
 
     @if (!string.IsNullOrWhiteSpace(result))
     {
-            <div class="ai-result">
-                <h5>AI Önerisi</h5>
-                <hr />
-                <pre>@result</pre>
+            <div class="row mt-5" id="sonuc">
+                <div class="col-lg-8 mx-auto">
+                    <div class="card bg-dark border border-warning shadow-lg">
+                        <div class="card-header bg-transparent border-warning text-center">
+                            <h4 class="text-warning fw-bold mb-0">Sana Özel Program Hazır!</h4>
+                        </div>
+                        <div class="card-body p-4">
+                            <pre style="white-space: pre-wrap; font-family: 'Poppins', sans-serif; font-size: 0.95rem; color: #e0e0e0;">@result</pre>
+                        </div>
+                        <div class="card-footer bg-transparent border-warning text-center">
+                            <button onclick="window.print()" class="btn btn-outline-light btn-sm"><i class="fas fa-print me-2"></i>Yazdır / Kaydet</button>
+                        </div>
+                    </div>
+                </div>
             </div>
     }
-
 </div>
-      </div>
-    </div>
-</div>
-
 
 @section Scripts {
         <partial name="_ValidationScriptsPartial" />
 }
-<div class="container py-4">
-    <div class="card bg-dark text-white shadow-lg">
-        <div class="card-body">
-            <h2 class="mb-3 text-danger">AI KOÇTAN DESTEK</h2>
-            <p class="text-muted">
-                Bilgileri gir, sana uygun planı al.
-            </p>
-
-            <!-- SENİN FORM BURADA AYNI KALIYOR -->
-  

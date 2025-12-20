@@ -3,163 +3,181 @@
     ViewData["Title"] = "Randevu Al";
 }
 
-<h1 class="mb-4">Randevu Al</h1>
+<style>
+    /* Koyu Tema Uyumlu Form Elemanları */
+    .form-control, .form-select {
+        background-color: #2c2c2c;
+        border: 1px solid #444;
+        color: #fff;
+    }
+    .form-control:focus, .form-select:focus {
+        background-color: #333;
+        color: #fff;
+        border-color: #ffc107;
+        box-shadow: none;
+    }
+    option { background-color: #222; }
+</style>
 
-<form asp-action="Create" method="post">
-    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-9">
+            <div class="card bg-card border-0 shadow-lg">
+                <div class="card-header bg-transparent border-bottom border-secondary py-3">
+                    <h3 class="fw-bold text-white mb-0"><i class="fas fa-calendar-plus text-warning me-2"></i>Randevu Oluştur</h3>
+                </div>
+                <div class="card-body p-4">
+                    <form asp-action="Create" method="post">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger mb-4"></div>
 
-    <div class="row">
-        <div class="col-md-4 mb-3">
-            <label class="form-label">Salon</label>
-            <select asp-for="SalonId" class="form-select" asp-items="Model.Salonlar" id="salonSelect"></select>
-        </div>
-        <div class="col-md-4 mb-3">
-            <label class="form-label">Eğitmen</label>
-            <select asp-for="EgitmenId" class="form-select" asp-items="Model.Egitmenler" id="egitmenSelect"></select>
-        </div>
-        <div class="col-md-4 mb-3">
-            <label class="form-label">Tarih</label>
-            <input asp-for="Tarih" class="form-control" type="date" id="tarihInput" />
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <label class="form-label text-muted small">Salon</label>
+                                <select asp-for="SalonId" class="form-select form-select-lg" asp-items="Model.Salonlar" id="salonSelect">
+                                    <option value="">Salon Seçiniz...</option>
+                                </select>
+                                <span asp-validation-for="SalonId" class="text-danger small"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label text-muted small">Eğitmen</label>
+                                <select asp-for="EgitmenId" class="form-select form-select-lg" asp-items="Model.Egitmenler" id="egitmenSelect" disabled>
+                                    <option value="">Önce Salon Seçiniz</option>
+                                </select>
+                                <span asp-validation-for="EgitmenId" class="text-danger small"></span>
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-4">
+                                <label class="form-label text-muted small">Tarih</label>
+                                <input asp-for="Tarih" class="form-control" type="date" id="tarihInput" value="@DateTime.Now.ToString("yyyy-MM-dd")" />
+                                <span asp-validation-for="Tarih" class="text-danger small"></span>
+                            </div>
+                            <div class="col-md-8">
+                                <label class="form-label text-muted small">Hizmet</label>
+                                <select asp-for="HizmetId" class="form-select" asp-items="Model.Hizmetler" id="hizmetSelect" disabled>
+                                    <option value="">Önce Eğitmen Seçiniz</option>
+                                </select>
+                                <div class="form-text text-info mt-1" id="hizmetInfo"></div>
+                                <span asp-validation-for="HizmetId" class="text-danger small"></span>
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-8">
+                                <label class="form-label text-muted small">Uygun Saatler</label>
+                                <select asp-for="BaslangicStr" class="form-select" id="saatSelect" disabled>
+                                    <option value="">Seçimlerinizi yapınız...</option>
+                                </select>
+                                <span asp-validation-for="BaslangicStr" class="text-danger small"></span>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label text-muted small">Kişi Sayısı</label>
+                                <input asp-for="KisiSayisi" class="form-control" type="number" min="1" max="10" />
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-end pt-3 border-top border-secondary">
+                            <a asp-action="Index" class="btn btn-outline-light px-4 me-2">İptal</a>
+                            <button type="submit" class="btn btn-warning px-5 fw-bold shadow">RANDEVU OLUŞTUR</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
         </div>
     </div>
-
-    <div class="row">
-        <div class="col-md-6 mb-3">
-            <label class="form-label">Hizmet</label>
-            <select asp-for="HizmetId" class="form-select" asp-items="Model.Hizmetler" id="hizmetSelect"></select>
-            <span asp-validation-for="HizmetId" class="text-danger"></span>
-            <div class="form-text" id="hizmetInfo"></div>
-        </div>
-        <div class="col-md-3 mb-3">
-            <label class="form-label">Kişi Sayısı</label>
-            <input asp-for="KisiSayisi" class="form-control" type="number" min="1" max="50" id="kisiInput" />
-            <span asp-validation-for="KisiSayisi" class="text-danger"></span>
-        </div>
-        <div class="col-md-3 mb-3">
-            <label class="form-label">Saat (30 dk aralıklarla)</label>
-            <select asp-for="BaslangicStr" class="form-select" id="saatSelect">
-                @foreach (var s in Model.SaatSecenekleri)
-                {
-                        <option value="@s">@s</option>
-                }
-            </select>
-            <span asp-validation-for="BaslangicStr" class="text-danger"></span>
-        </div>
-    </div>
-
-    <button type="submit" class="btn btn-primary">Randevuyu Oluştur</button>
-    <a asp-action="Index" class="btn btn-secondary">Geri</a>
-</form>
+</div>
 
 @section Scripts {
         <partial name="_ValidationScriptsPartial" />
-
         <script>
-            let hizmetCache = [];
+            $(document).ready(function () {
+                // 1. Salon değişince Eğitmenleri Getir
+                $('#salonSelect').change(function () {
+                    var salonId = $(this).val();
+                    var $egitmenSelect = $('#egitmenSelect');
 
-            async function refreshHizmetler() {
-                const salonId = document.getElementById('salonSelect').value;
-                const egitmenId = document.getElementById('egitmenSelect').value;
-                const hizmetSelect = document.getElementById('hizmetSelect');
+                    $egitmenSelect.empty().append('<option value="">Yükleniyor...</option>').prop('disabled', true);
+                    $('#hizmetSelect').empty().append('<option value="">Önce Eğitmen Seçiniz</option>').prop('disabled', true);
+                    $('#saatSelect').empty().prop('disabled', true);
 
-                const url = `@Url.Action("GetHizmetler", "Randevular")?salonId=${salonId}&egitmenId=${egitmenId}`;
-                const res = await fetch(url);
+                    if (salonId) {
+                        $.getJSON('/Randevular/GetEgitmenler?salonId=' + salonId, function (data) {
+                            $egitmenSelect.empty().append('<option value="">Eğitmen Seçiniz...</option>');
+                            $.each(data, function (i, item) {
+                                $egitmenSelect.append($('<option>').val(item.id).text(item.ad));
+                            });
+                            $egitmenSelect.prop('disabled', false);
+                        });
+                    } else {
+                        $egitmenSelect.empty().append('<option value="">Önce Salon Seçiniz</option>');
+                    }
+                });
 
-                hizmetSelect.innerHTML = '';
-                hizmetCache = [];
+                // 2. Eğitmen değişince Hizmetleri Getir
+                $('#egitmenSelect').change(function () {
+                    var egitmenId = $(this).val();
+                    var $hizmetSelect = $('#hizmetSelect');
 
-                if (!res.ok) {
-                    const opt = document.createElement('option');
-                    opt.value = '';
-                    opt.textContent = 'Hizmet listesi alınamadı';
-                    hizmetSelect.appendChild(opt);
-                    document.getElementById('hizmetInfo').textContent = '';
-                    return;
+                    $hizmetSelect.empty().append('<option value="">Yükleniyor...</option>').prop('disabled', true);
+
+                    if (egitmenId) {
+                        $.getJSON('/Randevular/GetHizmetler?egitmenId=' + egitmenId, function (data) {
+                            $hizmetSelect.empty().append('<option value="">Hizmet Seçiniz...</option>');
+                            $.each(data, function (i, item) {
+                                // data-sure ve data-ucret attribute'larını ekliyoruz ki JS ile okuyabilelim
+                                $hizmetSelect.append(
+                                    $('<option>').val(item.id).text(item.ad).data('sure', item.sure).data('ucret', item.ucret)
+                                );
+                            });
+                            $hizmetSelect.prop('disabled', false);
+                        });
+                    }
+                });
+
+                // 3. Hizmet veya Tarih değişince Saatleri Getir
+                $('#hizmetSelect, #tarihInput').change(function () {
+                    updateHizmetInfo();
+                    loadSlots();
+                });
+
+                function updateHizmetInfo() {
+                    var $selectedOption = $('#hizmetSelect option:selected');
+                    var sure = $selectedOption.data('sure');
+                    var ucret = $selectedOption.data('ucret');
+
+                    if (sure && ucret) {
+                        $('#hizmetInfo').html('<i class="fas fa-clock me-1"></i>Süre: <b>' + sure + ' dk</b> | <i class="fas fa-tag me-1"></i>Ücret: <b>' + ucret + ' ₺</b>');
+                    } else {
+                        $('#hizmetInfo').empty();
+                    }
                 }
 
-                const data = await res.json();
-                hizmetCache = data || [];
+                function loadSlots() {
+                    var salonId = $('#salonSelect').val();
+                    var egitmenId = $('#egitmenSelect').val();
+                    var hizmetId = $('#hizmetSelect').val();
+                    var tarih = $('#tarihInput').val();
+                    var $saatSelect = $('#saatSelect');
 
-                if (!hizmetCache.length) {
-                    const opt = document.createElement('option');
-                    opt.value = '';
-                    opt.textContent = 'Bu seçim için hizmet yok';
-                    hizmetSelect.appendChild(opt);
-                    document.getElementById('hizmetInfo').textContent = '';
-                    return;
+                    if (salonId && egitmenId && hizmetId && tarih) {
+                        $saatSelect.empty().append('<option>Saatler kontrol ediliyor...</option>').prop('disabled', true);
+
+                        var url = `/Randevular/GetSlots?salonId=${salonId}&egitmenId=${egitmenId}&tarih=${tarih}&hizmetId=${hizmetId}`;
+
+                        $.getJSON(url, function (data) {
+                            $saatSelect.empty();
+                            if (data.length === 0) {
+                                $saatSelect.append('<option value="">Uygun saat yok</option>');
+                            } else {
+                                $.each(data, function (i, time) {
+                                    $saatSelect.append($('<option>').val(time).text(time));
+                                });
+                                $saatSelect.prop('disabled', false);
+                            }
+                        });
+                    }
                 }
-
-                for (const h of hizmetCache) {
-                    const opt = document.createElement('option');
-                    opt.value = h.id;
-                    opt.textContent = `${h.ad} (${h.sureDakika} dk - ${h.ucret} ₺)`;
-                    hizmetSelect.appendChild(opt);
-                }
-
-                updateHizmetInfo();
-                await refreshSlots();
-            }
-
-            function updateHizmetInfo() {
-                const hizmetSelect = document.getElementById('hizmetSelect');
-                const selectedId = parseInt(hizmetSelect.value || '0');
-                const h = hizmetCache.find(x => x.id === selectedId);
-                const info = document.getElementById('hizmetInfo');
-
-                if (!h) { info.textContent = ''; return; }
-                info.textContent = `Süre: ${h.sureDakika} dk | Ücret: ${h.ucret} ₺`;
-            }
-
-            async function refreshSlots() {
-                const salonId = document.getElementById('salonSelect').value;
-                const egitmenId = document.getElementById('egitmenSelect').value;
-                const tarih = document.getElementById('tarihInput').value;
-                const hizmetId = document.getElementById('hizmetSelect').value;
-                const kisi = document.getElementById('kisiInput').value;
-                const saatSelect = document.getElementById('saatSelect');
-
-                if (!salonId || !egitmenId || !tarih || !hizmetId) return;
-
-                const url = `@Url.Action("GetSlots", "Randevular")?salonId=${salonId}&egitmenId=${egitmenId}&tarih=${tarih}&hizmetId=${hizmetId}&kisiSayisi=${kisi}`;
-                const res = await fetch(url);
-
-                saatSelect.innerHTML = '';
-
-                if (!res.ok) {
-                    const opt = document.createElement('option');
-                    opt.value = '';
-                    opt.textContent = 'Saat listesi alınamadı';
-                    saatSelect.appendChild(opt);
-                    return;
-                }
-
-                const data = await res.json();
-                if (!data || data.length === 0) {
-                    const opt = document.createElement('option');
-                    opt.value = '';
-                    opt.textContent = 'Uygun saat yok';
-                    saatSelect.appendChild(opt);
-                    return;
-                }
-
-                for (const s of data) {
-                    const opt = document.createElement('option');
-                    opt.value = s;
-                    opt.textContent = s;
-                    saatSelect.appendChild(opt);
-                }
-            }
-
-            document.getElementById('salonSelect').addEventListener('change', refreshHizmetler);
-            document.getElementById('egitmenSelect').addEventListener('change', refreshHizmetler);
-            document.getElementById('tarihInput').addEventListener('change', refreshSlots);
-            document.getElementById('kisiInput').addEventListener('change', refreshSlots);
-            document.getElementById('hizmetSelect').addEventListener('change', async () => {
-                updateHizmetInfo();
-                await refreshSlots();
             });
-
-            // ilk yükleme
-            refreshHizmetler();
         </script>
 }

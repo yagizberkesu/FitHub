@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace FitHub.Controllers
 {
-    [AdminAuthorize]
+    // [AdminAuthorize] BURADAN KALDIRDIK
     public class HizmetlerController : Controller
     {
         private readonly FitHubContext _context;
@@ -16,6 +16,7 @@ namespace FitHub.Controllers
             _context = context;
         }
 
+        // Herkese Açık
         public async Task<IActionResult> Index()
         {
             var list = await _context.Hizmetler
@@ -27,6 +28,7 @@ namespace FitHub.Controllers
             return View(list);
         }
 
+        // Herkese Açık
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null) return NotFound();
@@ -40,6 +42,8 @@ namespace FitHub.Controllers
             return View(h);
         }
 
+        // Sadece Admin
+        [AdminAuthorize]
         public async Task<IActionResult> Create()
         {
             ViewBag.SalonId = new SelectList(await _context.Salonlar.AsNoTracking().ToListAsync(), "Id", "Ad");
@@ -48,6 +52,7 @@ namespace FitHub.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [AdminAuthorize] // Sadece Admin
         public async Task<IActionResult> Create(Hizmet hizmet)
         {
             if (hizmet.SureDakika % 30 != 0)
@@ -64,6 +69,7 @@ namespace FitHub.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        [AdminAuthorize] // Sadece Admin
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null) return NotFound();
@@ -77,6 +83,7 @@ namespace FitHub.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [AdminAuthorize] // Sadece Admin
         public async Task<IActionResult> Edit(int id, Hizmet hizmet)
         {
             if (id != hizmet.Id) return NotFound();
@@ -95,6 +102,7 @@ namespace FitHub.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        [AdminAuthorize] // Sadece Admin
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null) return NotFound();
@@ -110,6 +118,7 @@ namespace FitHub.Controllers
 
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
+        [AdminAuthorize] // Sadece Admin
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var h = await _context.Hizmetler.FindAsync(id);

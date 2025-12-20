@@ -7,6 +7,8 @@
     <title>FitHub - @ViewData["Title"]</title>
 
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 </head>
 <body>
@@ -14,86 +16,85 @@
         var userRole = Context.Session.GetString("UserRole") ?? "";
         var userName = Context.Session.GetString("UserName") ?? "";
         var isLoggedIn = !string.IsNullOrWhiteSpace(userName);
-        var isAdmin = string.Equals(userRole, "Admin", StringComparison.OrdinalIgnoreCase)
-                      || string.Equals(userRole, "admin", StringComparison.OrdinalIgnoreCase);
+        var isAdmin = string.Equals(userRole, "Admin", StringComparison.OrdinalIgnoreCase);
     }
 
     <header>
-        <nav class="navbar navbar-expand-lg navbar-light bg-light border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-controller="Home" asp-action="Index">FitHub</a>
+        <nav class="navbar navbar-expand-lg navbar-dark sticky-top shadow-sm">
+            <div class="container">
+                <a class="navbar-brand d-flex align-items-center" asp-controller="Home" asp-action="Index">
+                    <i class="fas fa-dumbbell text-warning me-2"></i>FitHub
+                </a>
 
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
                         aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
 
-                <div class="collapse navbar-collapse" id="navbarNav">
-                    <ul class="navbar-nav me-auto">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-controller="Home" asp-action="Index">Ana Sayfa</a>
-                        </li>
+               <div class="collapse navbar-collapse" id="navbarNav">
+    <ul class="navbar-nav me-auto">
+        <li class="nav-item">
+            <a class="nav-link text-dark" asp-controller="Home" asp-action="Index">Ana Sayfa</a>
+        </li>
 
-                        <!-- AI Koç -->
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-controller="Ai" asp-action="Koc">AI Koçtan Destek</a>
-                        </li>
+        <li class="nav-item">
+            <a class="nav-link text-dark" asp-controller="Hizmetler" asp-action="Index">Hizmetlerimiz</a>
+        </li>
+
+        <li class="nav-item">
+            <a class="nav-link text-dark" asp-controller="Ai" asp-action="Koc">AI Koçtan Destek</a>
+        </li>
 
                         @if (isLoggedIn)
                         {
-                                <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-controller="Randevular" asp-action="Index">Randevularım</a>
-                                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-dark" asp-controller="Randevular" asp-action="Index">Randevularım</a>
+                </li>
                         }
 
                         @if (isAdmin)
                         {
-                                <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-controller="Home" asp-action="AdminPanel">Admin Panel</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-controller="Salonlar" asp-action="Index">Salonlar</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-controller="Egitmenler" asp-action="Index">Eğitmenler</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-controller="Hizmetler" asp-action="Index">Hizmetler</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-controller="Randevular" asp-action="Index">Randevular</a>
-                                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-dark" asp-controller="Home" asp-action="AdminPanel">Admin Panel</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-dark" asp-controller="Salonlar" asp-action="Index">Salonlar</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-dark" asp-controller="Egitmenler" asp-action="Index">Eğitmenler</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-dark" asp-controller="Randevular" asp-action="Index">Tüm Randevular</a>
+                </li>
                         }
-                    </ul>
+    </ul>
 
-                    <ul class="navbar-nav ms-auto">
+                    <ul class="navbar-nav ms-auto align-items-center">
                         @if (!isLoggedIn)
                         {
                                 <li class="nav-item">
                                     <a class="nav-link" asp-controller="Uye" asp-action="Login">Giriş Yap</a>
                                 </li>
-                                <li class="nav-item">
-                                    <a class="nav-link" asp-controller="Uye" asp-action="Register">Kayıt Ol</a>
+                                <li class="nav-item ms-2">
+                                    <a class="btn btn-accent btn-sm" asp-controller="Uye" asp-action="Register">Kayıt Ol</a>
                                 </li>
                         }
                         else
                         {
                                 <li class="nav-item dropdown">
-                                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown">
+                                        <div class="bg-warning text-black rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 30px; height: 30px; font-weight: bold;">
+                                        @userName.Substring(0, 1).ToUpper()
+                                        </div>
                                     @userName
                                     </a>
-                                    <ul class="dropdown-menu dropdown-menu-end">
-                                    @* Profil actionın varsa aç:
-                                    <li>
-                                        <a class="dropdown-item" asp-controller="Uye" asp-action="Profil">Profil</a>
-                                    </li>
-                                    <li><hr class="dropdown-divider" /></li>
-                                    *@
-
+                                    <ul class="dropdown-menu dropdown-menu-end dropdown-menu-dark">
                                         <li>
-                                            <form asp-controller="Uye" asp-action="Logout" method="post" class="d-inline">
+                                            <form asp-controller="Uye" asp-action="Logout" method="post">
                                             @Html.AntiForgeryToken()
-                                                <button type="submit" class="dropdown-item">Çıkış</button>
+                                                <button type="submit" class="dropdown-item text-danger">
+                                                    <i class="fas fa-sign-out-alt me-2"></i>Çıkış
+                                                </button>
                                             </form>
                                         </li>
                                     </ul>
@@ -105,19 +106,20 @@
         </nav>
     </header>
 
-    <div class="container">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
-    </div>
+    <main role="main" class="pb-3">
+        @RenderBody()
+    </main>
 
-    <footer class="border-top footer text-muted mt-4">
-        <div class="container py-3">
-            &copy; @DateTime.Now.Year - FitHub
+    <footer class="footer mt-auto py-4">
+        <div class="container text-center">
+            <p class="mb-0">&copy; @DateTime.Now.Year - <strong>FitHub</strong> Fitness Center</p>
+            <small class="text-muted">Web Programlama Proje Ödevi</small>
         </div>
     </footer>
 
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    @RenderSection("Scripts", required: false)
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

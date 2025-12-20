@@ -1,21 +1,100 @@
-﻿@{
-    ViewData["Title"] = "FitHub";
+﻿@model IEnumerable<FitHub.Models.Hizmet>
+
+@{
+    ViewData["Title"] = "Ana Sayfa";
 }
 
-<section class="hero-section text-white text-center d-flex align-items-center">
+<section class="hero-section text-white text-center d-flex align-items-center mb-5" style="background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url('https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=1920&auto=format&fit=crop'); background-size: cover; background-position: center; min-height: 80vh;">
     <div class="container">
-        <h1 class="display-4 fw-bold">HAREKETE GEÇ!</h1>
-        <p class="lead mt-3">
+        <h1 class="display-3 fw-bold text-uppercase" style="letter-spacing: 2px;">HAREKETE GEÇ!</h1>
+        <p class="lead mt-3 fs-4 text-light opacity-75">
             Zaman geçiyor. Olmak istediğin kişi misin?
         </p>
 
-        <div class="mt-4">
-            <a asp-controller="Ai" asp-action="Koc" class="btn btn-danger btn-lg me-2">
-                AI KOÇTAN DESTEK AL
+        <div class="mt-5 d-flex justify-content-center gap-3">
+            <a asp-controller="Ai" asp-action="Koc" class="btn btn-warning btn-lg fw-bold px-5 py-3 rounded-pill text-dark shadow">
+                <i class="fas fa-robot me-2"></i>AI KOÇ
             </a>
-            <a asp-controller="Salonlar" asp-action="Index" class="btn btn-outline-light btn-lg">
+            <a href="#hizmetler" class="btn btn-outline-light btn-lg fw-bold px-5 py-3 rounded-pill">
                 SALONLARI GÖR
             </a>
         </div>
     </div>
 </section>
+
+<div id="hizmetler" class="container py-5">
+    <div class="text-center mb-5">
+        <h6 class="text-warning fw-bold text-uppercase ls-2">NELER SUNUYORUZ?</h6>
+        <h2 class="fw-bold text-white display-5">Hizmetler & Eğitmenler</h2>
+        <p class="text-muted w-75 mx-auto">Alanında uzman eğitmenlerimizle hedeflerine ulaşman için en iyi programları hazırladık.</p>
+    </div>
+
+    @if (!Model.Any())
+    {
+            <div class="alert alert-dark text-center border-secondary text-muted">
+                Henüz hizmet tanımlanmamış.
+            </div>
+    }
+    else
+    {
+            <div class="row g-4">
+            @foreach (var hizmet in Model)
+            {
+                        <div class="col-md-6 col-lg-4">
+                            <div class="card h-100 bg-card border-0 shadow-lg hover-effect" style="background-color: #1e1e1e; border: 1px solid #333;">
+                                <div class="card-body p-4 text-center">
+                                    <div class="bg-dark rounded-circle d-inline-flex align-items-center justify-content-center mb-4 border border-warning" style="width: 70px; height: 70px;">
+                                        <i class="fas fa-dumbbell fa-2x text-warning"></i>
+                                    </div>
+
+                                    <h4 class="card-title fw-bold text-white mb-3">@hizmet.Ad</h4>
+
+                                    <div class="d-flex justify-content-center gap-3 mb-4 text-muted small">
+                                        <span><i class="far fa-clock text-warning me-1"></i>@hizmet.SureDakika dk</span>
+                                        <span><i class="fas fa-tag text-warning me-1"></i>@hizmet.Ucret.ToString("C0")</span>
+                                    </div>
+
+                                    <hr class="border-secondary opacity-25 my-4" />
+
+                                    <h6 class="text-uppercase text-secondary small fw-bold mb-3">EĞİTMENLER</h6>
+
+                            @if (hizmet.EgitmenHizmetler != null && hizmet.EgitmenHizmetler.Any())
+                            {
+                                            <div class="d-flex flex-wrap justify-content-center gap-2">
+                                    @foreach (var eh in hizmet.EgitmenHizmetler)
+                                    {
+                                                        <span class="badge bg-dark border border-secondary text-white py-2 px-3 rounded-pill">
+                                                            <i class="fas fa-user-ninja me-1 text-warning"></i>
+                                            @(eh.Egitmen?.Ad ?? "Bilinmiyor")
+                                                        </span>
+                                    }
+                                            </div>
+                            }
+                            else
+                            {
+                                            <p class="text-muted fst-italic small">Bu ders için henüz eğitmen atanmadı.</p>
+                            }
+                                </div>
+                                <div class="card-footer bg-transparent border-0 pb-4 text-center">
+                                    <a asp-controller="Randevular" asp-action="Create" class="btn btn-outline-warning btn-sm w-50 rounded-pill">
+                                        Randevu Al
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+            }
+            </div>
+    }
+</div>
+
+<style>
+    .hover-effect {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .hover-effect:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+        border-color: var(--primary-color) !important;
+    }
+    .ls-2 { letter-spacing: 2px; }
+</style>
