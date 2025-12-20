@@ -66,31 +66,34 @@ namespace FitHub.Controllers
                 return View(model);
             }
 
-            var user = await _context.Uyeler
+            var uye = await _context.Uyeler
                 .FirstOrDefaultAsync(u => u.Email == model.Email && u.Sifre == model.Sifre);
 
-            if (user == null)
+            if (uye == null)
             {
-                ModelState.AddModelError(string.Empty, "E-posta veya þifre hatalý.");
+                ModelState.AddModelError("", "Geçersiz e-posta veya þifre.");
                 return View(model);
             }
 
-            HttpContext.Session.SetInt32("UserId", user.Id);
-            HttpContext.Session.SetString("UserRole", user.Rol ?? "Uye");
-
-            if (user.Rol == "Admin")
-            {
-                return RedirectToAction("AdminPanel", "Home");
-            }
+            // Set session values
+            HttpContext.Session.SetInt32("UserId", uye.Id);
+            HttpContext.Session.SetString("UserRole", uye.Rol ?? "");
+            var adSoyad = (!string.IsNullOrWhiteSpace(uye.Ad) && !string.IsNullOrWhiteSpace(uye.Soyad))
+                ? $"{uye.Ad} {uye.Soyad}"
+                : uye.Email;
+            HttpContext.Session.SetString("UserName", adSoyad);
 
             return RedirectToAction("Index", "Home");
         }
 
-        [HttpGet]
+     
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
         public IActionResult Logout()
         {
             HttpContext.Session.Clear();
-            return RedirectToAction(nameof(Login));
+            return RedirectToAction("Index", "Home");
         }
     }
 }

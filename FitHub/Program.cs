@@ -1,38 +1,46 @@
+using FitHub.Models;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Http;
-using FitHub.Models; // For session extensions  
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddDbContext<FitHubContext>(options =>
- options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
-);
+// MVC
+builder.Services.AddControllersWithViews();
 
-// Add session services  and configure session options..
-builder.Services.AddDistributedMemoryCache();
+// DbContext
+builder.Services.AddDbContext<FitHubContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// Session
 builder.Services.AddSession(options =>
 {
-    options.IdleTimeout = TimeSpan.FromMinutes(30);
+    options.IdleTimeout = TimeSpan.FromMinutes(60);
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
 });
 
-builder.Services.AddRazorPages();
-builder.Services.AddControllersWithViews(); // No global filters, keep it simple  
-
 var app = builder.Build();
+
+// Pipeline
+if (!app.Environment.IsDevelopment())
+{
+    app.UseExceptionHandler("/Home/Error");
+    app.UseHsts();
+}
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
+
 app.UseRouting();
 
-// Enable session middleware  
+// Session mutlaka Routing'den sonra
 app.UseSession();
 
-app.MapControllerRoute(
- name: "default",
- pattern: "{controller=Home}/{action=Index}/{id?}");
+// Eðer Identity/Authentication kullanmýyorsan bunlarý EKLEME.
+// app.UseAuthentication();
+app.UseAuthorization();
 
-app.MapRazorPages();
+app.MapControllerRoute(
+    name: "default",
+    pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.Run();
