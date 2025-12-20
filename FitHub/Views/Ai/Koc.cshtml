@@ -1,0 +1,93 @@
+﻿@model FitHub.Models.AiCoachViewModel
+@{
+    ViewData["Title"] = "AI Koç";
+    var result = ViewBag.Result as string;
+}
+
+<h2 class="mb-3">AI Koçtan Destek</h2>
+<p class="text-muted">Bilgileri doldur, AI sana antrenman planı üretsin.</p>
+
+<form asp-action="Koc" method="post" class="card p-3 mb-3">
+    @Html.AntiForgeryToken()
+    <div asp-validation-summary="ModelOnly" class="text-danger mb-2"></div>
+
+    <div class="row">
+        <div class="col-md-2 mb-2">
+            <label class="form-label">Yaş</label>
+            <input asp-for="Yas" class="form-control" type="number" />
+            <span asp-validation-for="Yas" class="text-danger"></span>
+        </div>
+        <div class="col-md-2 mb-2">
+            <label class="form-label">Boy (cm)</label>
+            <input asp-for="BoyCm" class="form-control" type="number" />
+            <span asp-validation-for="BoyCm" class="text-danger"></span>
+        </div>
+        <div class="col-md-2 mb-2">
+            <label class="form-label">Kilo (kg)</label>
+            <input asp-for="KiloKg" class="form-control" type="number" />
+            <span asp-validation-for="KiloKg" class="text-danger"></span>
+        </div>
+        <div class="col-md-3 mb-2">
+            <label class="form-label">Haftada Gün</label>
+            <input asp-for="HaftadaGun" class="form-control" type="number" />
+            <span asp-validation-for="HaftadaGun" class="text-danger"></span>
+        </div>
+        <div class="col-md-3 mb-2">
+            <label class="form-label">Süre (dk)</label>
+            <input asp-for="Dakika" class="form-control" type="number" />
+            <span asp-validation-for="Dakika" class="text-danger"></span>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4 mb-2">
+            <label class="form-label">Hedef</label>
+            <select asp-for="Hedef" class="form-select">
+                <option>Kas kazanımı</option>
+                <option>Yağ yakımı</option>
+                <option>Form koruma</option>
+                <option>Kondisyon</option>
+            </select>
+            <span asp-validation-for="Hedef" class="text-danger"></span>
+        </div>
+        <div class="col-md-4 mb-2">
+            <label class="form-label">Seviye</label>
+            <select asp-for="Seviye" class="form-select">
+                <option>Başlangıç</option>
+                <option>Orta</option>
+                <option>İleri</option>
+            </select>
+            <span asp-validation-for="Seviye" class="text-danger"></span>
+        </div>
+        <div class="col-md-4 mb-2">
+            <label class="form-label">Ekipman</label>
+            <select asp-for="Ekipman" class="form-select">
+                <option>Salon</option>
+                <option>Ev (dambıl)</option>
+                <option>Ev (ekipmansız)</option>
+            </select>
+            <span asp-validation-for="Ekipman" class="text-danger"></span>
+        </div>
+    </div>
+
+    <div class="mb-2">
+        <label class="form-label">Notlar (opsiyonel)</label>
+        <textarea asp-for="Notlar" class="form-control" rows="2" placeholder="Örn: bel ağrısı, diz hassasiyeti..."></textarea>
+        <span asp-validation-for="Notlar" class="text-danger"></span>
+    </div>
+
+    <button class="btn btn-primary mt-2" type="submit">AI’dan Program Al</button>
+</form>
+
+@if (!string.IsNullOrWhiteSpace(result))
+{
+        <div class="card p-3">
+            <h5 class="m-0">AI Önerisi</h5>
+            <hr />
+            <pre style="white-space:pre-wrap;margin:0">@result</pre>
+        </div>
+}
+
+@section Scripts {
+        <partial name="_ValidationScriptsPartial" />
+}

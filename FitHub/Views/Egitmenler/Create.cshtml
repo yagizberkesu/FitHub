@@ -19,14 +19,54 @@
         <input asp-for="UzmanlikAlanlari" class="form-control" />
     </div>
 
+    <!-- Müsaitlik Saatleri (00/30) -->
     <div class="row">
         <div class="col-md-6 mb-3">
-            <label asp-for="MusaitlikBaslangic" class="form-label">Müsaitlik Baþlangýç</label>
-            <input asp-for="MusaitlikBaslangic" type="time" class="form-control" />
+            <label class="form-label">Müsaitlik Baþlangýç</label>
+
+            <input type="hidden" asp-for="MusaitlikBaslangic" id="MusaitBaslangicHidden" />
+
+            <div class="d-flex gap-2">
+                <select class="form-select" id="MusaitBaslangicHour" style="max-width:120px">
+                    @for (var h = 0; h < 24; h++)
+                    {
+                        var hh = h.ToString("D2");
+                            <option value="@hh">@hh</option>
+                    }
+                </select>
+
+                <select class="form-select" id="MusaitBaslangicMin" style="max-width:120px">
+                    <option value="00">00</option>
+                    <option value="30">30</option>
+                </select>
+            </div>
+
+            <div class="form-text">Dakika sadece 00 veya 30.</div>
+            <span asp-validation-for="MusaitlikBaslangic" class="text-danger"></span>
         </div>
+
         <div class="col-md-6 mb-3">
-            <label asp-for="MusaitlikBitis" class="form-label">Müsaitlik Bitiþ</label>
-            <input asp-for="MusaitlikBitis" type="time" class="form-control" />
+            <label class="form-label">Müsaitlik Bitiþ</label>
+
+            <input type="hidden" asp-for="MusaitlikBitis" id="MusaitBitisHidden" />
+
+            <div class="d-flex gap-2">
+                <select class="form-select" id="MusaitBitisHour" style="max-width:120px">
+                    @for (var h = 0; h < 24; h++)
+                    {
+                        var hh = h.ToString("D2");
+                            <option value="@hh">@hh</option>
+                    }
+                </select>
+
+                <select class="form-select" id="MusaitBitisMin" style="max-width:120px">
+                    <option value="00">00</option>
+                    <option value="30">30</option>
+                </select>
+            </div>
+
+            <div class="form-text">Dakika sadece 00 veya 30.</div>
+            <span asp-validation-for="MusaitlikBitis" class="text-danger"></span>
         </div>
     </div>
 
@@ -48,4 +88,43 @@
 
 @section Scripts {
         <partial name="_ValidationScriptsPartial" />
+        <script>
+            function setFromHidden(hiddenId, hourId, minId, fallback) {
+                const hidden = document.getElementById(hiddenId);
+                const hour = document.getElementById(hourId);
+                const min = document.getElementById(minId);
+
+                let v = hidden.value;
+                if (v && v.length >= 5) v = v.substring(0, 5);
+                if (!v || v.length < 5) v = fallback;
+
+                const hh = v.substring(0, 2);
+                const mm = v.substring(3, 5);
+
+                hour.value = hh;
+                min.value = (mm === "30") ? "30" : "00";
+
+                hidden.value = `${hour.value}:${min.value}`;
+            }
+
+            function bind(hiddenId, hourId, minId) {
+                const hidden = document.getElementById(hiddenId);
+                const hour = document.getElementById(hourId);
+                const min = document.getElementById(minId);
+
+                function sync() {
+                    hidden.value = `${hour.value}:${min.value}`;
+                }
+
+                hour.addEventListener("change", sync);
+                min.addEventListener("change", sync);
+                sync();
+            }
+
+            setFromHidden("MusaitBaslangicHidden", "MusaitBaslangicHour", "MusaitBaslangicMin", "09:00");
+            setFromHidden("MusaitBitisHidden", "MusaitBitisHour", "MusaitBitisMin", "22:00");
+
+            bind("MusaitBaslangicHidden", "MusaitBaslangicHour", "MusaitBaslangicMin");
+            bind("MusaitBitisHidden", "MusaitBitisHour", "MusaitBitisMin");
+        </script>
 }

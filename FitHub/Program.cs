@@ -6,6 +6,11 @@ var builder = WebApplication.CreateBuilder(args);
 // MVC
 builder.Services.AddControllersWithViews();
 
+// Ai 
+builder.Services.AddHttpClient();
+builder.Services.AddScoped<FitHub.Services.IGroqService, FitHub.Services.GroqService>();
+
+
 // DbContext
 builder.Services.AddDbContext<FitHubContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));

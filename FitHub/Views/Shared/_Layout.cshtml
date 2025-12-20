@@ -34,6 +34,18 @@
                             <a class="nav-link text-dark" asp-controller="Home" asp-action="Index">Ana Sayfa</a>
                         </li>
 
+                        <!-- AI Koç -->
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-controller="Ai" asp-action="Koc">AI Koçtan Destek</a>
+                        </li>
+
+                        @if (isLoggedIn)
+                        {
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-controller="Randevular" asp-action="Index">Randevularım</a>
+                                </li>
+                        }
+
                         @if (isAdmin)
                         {
                                 <li class="nav-item">
@@ -44,6 +56,12 @@
                                 </li>
                                 <li class="nav-item">
                                     <a class="nav-link text-dark" asp-controller="Egitmenler" asp-action="Index">Eğitmenler</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-controller="Hizmetler" asp-action="Index">Hizmetler</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-controller="Randevular" asp-action="Index">Randevular</a>
                                 </li>
                         }
                     </ul>
