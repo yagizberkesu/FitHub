@@ -17,7 +17,7 @@ namespace FitHub.Controllers
 
         // --- YARDIMCI ÖZELLİKLER (Helpers) ---
 
-        // DÜZELTME: Login olurken SetInt32 yaptığın için burada GetInt32 ile okumalıyız.
+        // Session'dan kullanıcı ID'sini okuma
         private int? CurrentUserId => HttpContext.Session.GetInt32("UserId");
 
         // Oturumdaki kullanıcının Admin olup olmadığını kontrol eder
@@ -33,7 +33,6 @@ namespace FitHub.Controllers
         // --- 1. LİSTELEME (INDEX) ---
         public async Task<IActionResult> Index()
         {
-            // Giriş yapmamışsa Login'e at
             if (CurrentUserId == null) return RedirectToAction("Login", "Uye");
 
             var query = _context.Randevular
@@ -44,15 +43,12 @@ namespace FitHub.Controllers
                 .OrderByDescending(r => r.Tarih)
                 .AsQueryable();
 
-            // KİLİT NOKTA: Eğer Admin DEĞİLSE, sadece kendi randevularını filtrele
-            // "Başkasının randevusunu görmesin" kuralı burada çalışır.
+            // Admin değilse sadece kendi randevularını görsün
             if (!IsAdmin)
             {
-                // Veritabanındaki UyeId, oturumdaki ID'ye eşit olanları getir
                 query = query.Where(r => r.UyeId == CurrentUserId.Value);
             }
 
-            // Admin ise 'Where' çalışmaz, tüm liste gelir.
             return View(await query.ToListAsync());
         }
 
@@ -70,7 +66,7 @@ namespace FitHub.Controllers
 
             if (randevu == null) return NotFound();
 
-            // Güvenlik: Admin değilse VE randevu kendisine ait değilse göremez
+            // Güvenlik kontrolü
             if (!IsAdmin && randevu.UyeId != CurrentUserId)
             {
                 return RedirectToAction("Index");
@@ -139,7 +135,7 @@ namespace FitHub.Controllers
                 Sure = hizmet.SureDakika,
                 Ucret = hizmet.Ucret,
                 KisiSayisi = model.KisiSayisi,
-                Durum = "Beklemede"
+                Durum = "Beklemede" // Varsayılan durum
             };
 
             _context.Randevular.Add(randevu);
@@ -156,7 +152,6 @@ namespace FitHub.Controllers
             var randevu = await _context.Randevular.FindAsync(id);
             if (randevu == null) return NotFound();
 
-            // Güvenlik: Başkasının randevusunu silemesin
             if (!IsAdmin && randevu.UyeId != CurrentUserId)
             {
                 return RedirectToAction("Index");
@@ -165,7 +160,8 @@ namespace FitHub.Controllers
             return View(randevu);
         }
 
-        // --- 6. SİLME ONAY (DELETE - POST) ---
+        // --- 6. SİLME / REDDETME / İPTAL (DELETE - POST) ---
+        // Bu metod hem üyelerin iptali hem adminin reddetmesi için kullanılır.
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
@@ -173,20 +169,23 @@ namespace FitHub.Controllers
             var randevu = await _context.Randevular.FindAsync(id);
             if (randevu != null)
             {
+                // Yetki kontrolü
                 if (!IsAdmin && randevu.UyeId != CurrentUserId)
                 {
                     return RedirectToAction("Index");
                 }
 
-                // Admin silebilir, Üye iptal edebilir
                 if (!IsAdmin)
                 {
+                    // Üye ise sadece iptal edebilir
                     randevu.Durum = "İptal";
                     randevu.Onaylandi = false;
                 }
                 else
                 {
-                    _context.Randevular.Remove(randevu);
+                    // Admin ise "Sil" işlemi aslında REDDETMEK demektir
+                    randevu.Durum = "Reddedildi";
+                    randevu.Onaylandi = false;
                 }
 
                 await _context.SaveChangesAsync();
@@ -194,7 +193,24 @@ namespace FitHub.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        // --- RANDEVU DÜZENLEME (GET) ---
+        // --- 7. ONAYLAMA (Sadece Admin) ---
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Onayla(int id)
+        {
+            if (!IsAdmin) return RedirectToAction(nameof(Index));
+
+            var randevu = await _context.Randevular.FindAsync(id);
+            if (randevu == null) return NotFound();
+
+            randevu.Durum = "Onaylandı";
+            randevu.Onaylandi = true;
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction(nameof(Index));
+        }
+
+        // --- 8. DÜZENLEME (EDIT - GET) ---
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null) return NotFound();
@@ -202,7 +218,6 @@ namespace FitHub.Controllers
             var randevu = await _context.Randevular.FindAsync(id);
             if (randevu == null) return NotFound();
 
-            // Güvenlik: Sadece Admin veya Randevu Sahibi düzenleyebilir
             if (!IsAdmin && randevu.UyeId != CurrentUserId)
             {
                 return RedirectToAction("Index");
@@ -211,14 +226,13 @@ namespace FitHub.Controllers
             return View(randevu);
         }
 
-        // --- RANDEVU DÜZENLEME (POST) ---
+        // --- 9. DÜZENLEME (EDIT - POST) ---
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, Randevu randevu)
         {
             if (id != randevu.Id) return NotFound();
 
-            // Güvenlik Kontrolü
             var mevcutRandevu = await _context.Randevular.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id);
             if (mevcutRandevu == null) return NotFound();
 
@@ -227,7 +241,6 @@ namespace FitHub.Controllers
                 return RedirectToAction("Index");
             }
 
-            // Dakika Kontrolü: 30 dakika kuralı (Backend Validasyonu)
             if (randevu.Baslangic.Minute != 0 && randevu.Baslangic.Minute != 30)
             {
                 ModelState.AddModelError("Baslangic", "Randevu saatleri sadece tam (00) veya buçuk (30) olabilir.");
@@ -237,22 +250,17 @@ namespace FitHub.Controllers
             {
                 try
                 {
-                    // Hizmet süresine göre Bitiş saatini otomatik güncelle
-                    // (Hizmet süresini veritabanından tekrar çekiyoruz ki tutarlı olsun)
                     var hizmet = await _context.Hizmetler.FindAsync(mevcutRandevu.HizmetId);
                     if (hizmet != null)
                     {
-                        randevu.HizmetId = mevcutRandevu.HizmetId; // Değişmemeli
-                        randevu.SalonId = mevcutRandevu.SalonId;   // Değişmemeli
-                        randevu.EgitmenId = mevcutRandevu.EgitmenId; // Değişmemeli
-                        randevu.UyeId = mevcutRandevu.UyeId; // Değişmemeli
+                        randevu.HizmetId = mevcutRandevu.HizmetId;
+                        randevu.SalonId = mevcutRandevu.SalonId;
+                        randevu.EgitmenId = mevcutRandevu.EgitmenId;
+                        randevu.UyeId = mevcutRandevu.UyeId;
 
-                        // Bitiş saatini hesapla
                         randevu.Bitis = randevu.Baslangic.AddMinutes(hizmet.SureDakika);
                         randevu.Sure = hizmet.SureDakika;
                         randevu.Ucret = hizmet.Ucret;
-
-                        // Diğer alanları koru
                         randevu.Hizmet = hizmet.Ad;
                     }
 
@@ -310,7 +318,8 @@ namespace FitHub.Controllers
             var existingRandevular = await _context.Randevular
                 .Where(r => r.EgitmenId == egitmenId
                             && r.Tarih == tarihDateOnly
-                            && r.Durum != "İptal")
+                            && r.Durum != "İptal"
+                            && r.Durum != "Reddedildi") // Reddedilen saatler tekrar alınabilsin
                 .ToListAsync();
 
             while (start.AddMinutes(hizmet.SureDakika) <= end)

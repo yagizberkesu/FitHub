@@ -1,19 +1,32 @@
 @model IEnumerable<FitHub.Models.Randevu>
 @{
     ViewData["Title"] = "Randevular";
-    // Yönetici mi kontrolü (Layout'taki mantýkla ayný)
     var userRole = Context.Session.GetString("UserRole");
     bool isAdmin = string.Equals(userRole, "Admin", StringComparison.OrdinalIgnoreCase);
+
+    // Kullanýcýnýn reddedilen randevusu var mý kontrolü
+    bool reddedilenVar = !isAdmin && Model.Any(x => x.Durum == "Reddedildi");
 }
 
 <div class="container py-5">
+
+    @* --- REDDEDÝLEN RANDEVU VARSA UYARI VER --- *@
+    @if (reddedilenVar)
+    {
+            <div class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert">
+                <i class="fas fa-exclamation-circle me-2"></i>
+                <strong>Dikkat!</strong> Bazý randevularýnýz onaylanmadý. Lütfen durumu "Reddedildi" olan kayýtlarý kontrol ediniz.
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+    }
+
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h2 class="fw-bold text-white mb-0">
                 <i class="fas fa-calendar-alt text-warning me-2"></i>Randevular
             </h2>
             <p class="text-muted small">
-                @(isAdmin ? "Sistemdeki tüm randevularýn listesi." : "Planlanmýþ antrenmanlarýn.")
+                @(isAdmin ? "Onay bekleyen ve aktif tüm randevular." : "Planlanmýþ antrenmanlarýn.")
             </p>
         </div>
         <a asp-action="Create" class="btn btn-warning fw-bold shadow">
@@ -66,27 +79,50 @@
                                             <span class="text-success fw-bold">@item.Ucret.ToString("C0")</span>
                                         </td>
                                         <td>
+                                    @* --- DURUM MANTIÐI --- *@
                                     @if (item.Durum == "Ýptal")
                                     {
-                                                    <span class="badge bg-danger bg-opacity-10 text-danger border border-danger">Ýptal Edildi</span>
+                                                    <span class="badge bg-secondary bg-opacity-50 text-light border border-secondary">Ýptal</span>
                                     }
-                                    else if (item.Tarih < DateOnly.FromDateTime(DateTime.Now))
+                                    else if (item.Durum == "Reddedildi")
+                                    {
+                                                    <span class="badge bg-danger bg-opacity-10 text-danger border border-danger">Reddedildi</span>
+                                    }
+                                    else if (item.Durum == "Onaylandý")
+                                    {
+                                                    <span class="badge bg-success bg-opacity-25 text-success border border-success">Onaylandý</span>
+                                    }
+                                    else if (item.Tarih < DateOnly.FromDateTime(DateTime.Now) && item.Durum == "Onaylandý")
                                     {
                                                     <span class="badge bg-secondary text-light">Tamamlandý</span>
                                     }
                                     else
                                     {
-                                                    <span class="badge bg-warning text-dark">Aktif</span>
+                                        // Varsayýlan: Beklemede
+                                                    <span class="badge bg-warning text-dark blink-animation">Onay Bekliyor</span>
                                     }
                                         </td>
                                         <td class="text-end pe-4">
-                                            <div class="btn-group">
+                                            <div class="d-flex justify-content-end gap-2">
+
+                                        @* --- ADMIN ONAY BUTONU --- *@
+                                        @if (isAdmin && item.Durum == "Beklemede")
+                                        {
+                                                        <form asp-action="Onayla" asp-route-id="@item.Id" method="post" style="display:inline;">
+                                                            <button type="submit" class="btn btn-sm btn-success" title="Onayla">
+                                                                <i class="fas fa-check"></i>
+                                                            </button>
+                                                        </form>
+                                        }
+
                                                 <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-outline-info" title="Detay">
                                                     <i class="fas fa-eye"></i>
                                                 </a>
-                                        @if (item.Durum != "Ýptal" && item.Tarih >= DateOnly.FromDateTime(DateTime.Now))
+
+                                        @if (item.Durum != "Ýptal" && item.Durum != "Reddedildi" && item.Tarih >= DateOnly.FromDateTime(DateTime.Now))
                                         {
-                                                        <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-outline-danger" title="Ýptal Et">
+                                            @* Admin için "Reddet", Kullanýcý için "Ýptal Et" görünür, ikisi de Delete'e gider *@
+                                                        <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-outline-danger" title="@(isAdmin ? "Reddet" : "Ýptal Et")">
                                                             <i class="fas fa-times"></i>
                                                         </a>
                                         }
@@ -100,3 +136,13 @@
             </div>
     }
 </div>
+
+@* Basit bir CSS animasyonu ekleyelim *@
+<style>
+    .blink-animation {
+        animation: blinker 2s linear infinite;
+    }
+    @@keyframes blinker {
+        50% { opacity: 0.6; }
+    }
+</style>
