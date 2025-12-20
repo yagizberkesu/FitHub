@@ -1,47 +1,35 @@
 @model IEnumerable<FitHub.Models.Salon>
-
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Salonlar";
 }
 
-<h1>Index</h1>
+<h1 class="mb-4">Salonlar</h1>
+<a asp-action="Create" class="btn btn-primary mb-3">Yeni Salon</a>
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
-<table class="table">
-    <thead>
+<table class="table table-striped table-bordered">
+    <thead class="table-dark">
         <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.Ad)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.CalismaSaatleri)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Hizmetler)
-            </th>
+            <th>Ad</th>
+            <th>Çalýþma Saatleri</th>
+            <th>Kontenjan</th>
+            <th>Hizmetler</th>
             <th></th>
         </tr>
     </thead>
     <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.Ad)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.CalismaSaatleri)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Hizmetler)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
-            </td>
-        </tr>
-}
+        @foreach (var s in Model)
+        {
+            <tr>
+                <td>@s.Ad</td>
+                <td>@s.CalismaBaslangic.ToString("HH:mm") - @s.CalismaBitis.ToString("HH:mm")</td>
+                <td>@s.Kontenjan</td>
+                <td>@s.Hizmetler</td>
+                <td>
+                    <a asp-action="Details" asp-route-id="@s.Id" class="btn btn-info btn-sm">Detay</a>
+                    <a asp-action="Edit" asp-route-id="@s.Id" class="btn btn-warning btn-sm">Düzenle</a>
+                    <a asp-action="Delete" asp-route-id="@s.Id" class="btn btn-danger btn-sm">Sil</a>
+                </td>
+            </tr>
+        }
     </tbody>
 </table>

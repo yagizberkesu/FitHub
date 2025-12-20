@@ -4,23 +4,27 @@
 }
 
 <h1 class="mb-4">Eðitmen Detayý</h1>
+
 <div class="card">
     <div class="card-body">
         <dl class="row">
-            <dt class="col-sm-3">Id</dt>
-            <dd class="col-sm-9">@Model.Id</dd>
             <dt class="col-sm-3">Ad</dt>
             <dd class="col-sm-9">@Model.Ad</dd>
-            <dt class="col-sm-3">Uzmanlýk Alanlarý</dt>
-            <dd class="col-sm-9">@Model.UzmanlikAlanlari</dd>
-            <dt class="col-sm-3">Hizmetler</dt>
-            <dd class="col-sm-9">@Model.Hizmetler</dd>
-            <dt class="col-sm-3">Müsaitlik Saatleri</dt>
-            <dd class="col-sm-9">@Model.MusaitlikSaatleri</dd>
+
             <dt class="col-sm-3">Salon</dt>
             <dd class="col-sm-9">@Model.Salon?.Ad</dd>
+
+            <dt class="col-sm-3">Müsaitlik</dt>
+            <dd class="col-sm-9">@Model.MusaitlikBaslangic.ToString("HH:mm") - @Model.MusaitlikBitis.ToString("HH:mm")</dd>
+
+            <dt class="col-sm-3">Uzmanlýk Alanlarý</dt>
+            <dd class="col-sm-9">@Model.UzmanlikAlanlari</dd>
+
+            <dt class="col-sm-3">Hizmetler</dt>
+            <dd class="col-sm-9">@Model.Hizmetler</dd>
         </dl>
-        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">Düzenle</a>
-        <a asp-action="Index" class="btn btn-secondary">Listeye Dön</a>
+
+        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">Düzenle</a>
+        <a asp-action="Index" class="btn btn-secondary">Geri</a>
     </div>
 </div>

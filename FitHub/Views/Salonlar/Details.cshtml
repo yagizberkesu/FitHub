@@ -1,36 +1,27 @@
 @model FitHub.Models.Salon
-
 @{
-    ViewData["Title"] = "Details";
+    ViewData["Title"] = "Salon Detayý";
 }
 
-<h1>Details</h1>
+<h1 class="mb-4">Salon Detayý</h1>
 
-<div>
-    <h4>Salon</h4>
-    <hr />
-    <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Ad)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Ad)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.CalismaSaatleri)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.CalismaSaatleri)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Hizmetler)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Hizmetler)
-        </dd>
-    </dl>
-</div>
-<div>
-    <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> |
-    <a asp-action="Index">Back to List</a>
+<div class="card">
+    <div class="card-body">
+        <dl class="row">
+            <dt class="col-sm-3">Ad</dt>
+            <dd class="col-sm-9">@Model.Ad</dd>
+
+            <dt class="col-sm-3">Çalýþma Saatleri</dt>
+            <dd class="col-sm-9">@Model.CalismaBaslangic.ToString("HH:mm") - @Model.CalismaBitis.ToString("HH:mm")</dd>
+
+            <dt class="col-sm-3">Kontenjan</dt>
+            <dd class="col-sm-9">@Model.Kontenjan</dd>
+
+            <dt class="col-sm-3">Hizmetler</dt>
+            <dd class="col-sm-9">@Model.Hizmetler</dd>
+        </dl>
+
+        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">Düzenle</a>
+        <a asp-action="Index" class="btn btn-secondary">Geri</a>
+    </div>
 </div>

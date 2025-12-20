@@ -13,16 +13,16 @@ namespace FitHub.Filters
             var controller = context.RouteData.Values["controller"]?.ToString();
             var action = context.RouteData.Values["action"]?.ToString();
 
-            // Allow Uye/Login and Uye/Register for everyone
-            if (controller == "Uye" &&
-                (action == "Login" || action == "Register"))
+            if (string.Equals(controller, "Uye", StringComparison.OrdinalIgnoreCase)
+                && (string.Equals(action, "Login", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(action, "Register", StringComparison.OrdinalIgnoreCase)))
             {
                 return;
             }
 
-            var role = context.HttpContext.Session.GetString("UserRole");
+            var role = context.HttpContext.Session.GetString("UserRole") ?? string.Empty;
 
-            if (role != "Admin")
+            if (!string.Equals(role, "Admin", StringComparison.OrdinalIgnoreCase))
             {
                 context.Result = new RedirectToActionResult("Login", "Uye", null);
             }

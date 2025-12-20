@@ -1,13 +1,26 @@
+using System;
+using System.ComponentModel.DataAnnotations;
+
 namespace FitHub.Models
 {
     public class Egitmen
     {
         public int Id { get; set; }
-        public string Ad { get; set; }
-        public string UzmanlikAlanlari { get; set; } // Örn: "Kas Geliþtirme, Yoga"
-        public string Hizmetler { get; set; } // Verdiði hizmet türleri
-        public string MusaitlikSaatleri { get; set; } // Örn: "09:00-12:00, 14:00-18:00"
-        public int SalonId { get; set; } // Hangi salonda çalýþýyor
-        public Salon Salon { get; set; }
+
+        [Required]
+        [StringLength(100)]
+        public string Ad { get; set; } = string.Empty;
+
+        public string UzmanlikAlanlari { get; set; } = string.Empty;
+        public string Hizmetler { get; set; } = string.Empty;
+
+        // Seviye 1: Tek aralýk müsaitlik saati
+        public TimeOnly MusaitlikBaslangic { get; set; } = new TimeOnly(9, 0);
+        public TimeOnly MusaitlikBitis { get; set; } = new TimeOnly(22, 0);
+
+        [Required]
+        public int SalonId { get; set; }
+
+        public Salon? Salon { get; set; }
     }
 }

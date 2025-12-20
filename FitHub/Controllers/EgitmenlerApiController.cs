@@ -18,8 +18,6 @@ namespace FitHub.Controllers
             _context = context;
         }
 
-        // GET: api/egitmenler
-        // Returns all trainers with selected fields
         [HttpGet]
         public async Task<ActionResult> GetAll()
         {
@@ -30,7 +28,7 @@ namespace FitHub.Controllers
                     e.Ad,
                     e.UzmanlikAlanlari,
                     e.Hizmetler,
-                    e.MusaitlikSaatleri,
+                    Musaitlik = e.MusaitlikBaslangic.ToString("HH:mm") + "-" + e.MusaitlikBitis.ToString("HH:mm"),
                     e.SalonId
                 })
                 .ToListAsync();
@@ -38,24 +36,24 @@ namespace FitHub.Controllers
             return Ok(egitmenler);
         }
 
-        // GET: api/egitmenler/uzmanlik?alan=Yoga
-        // Returns trainers filtered by specialty (case-insensitive)
         [HttpGet("uzmanlik")]
         public async Task<ActionResult> GetByUzmanlik([FromQuery] string alan)
         {
             if (string.IsNullOrWhiteSpace(alan))
                 return BadRequest("Uzmanlýk alaný belirtilmelidir.");
 
+            var needle = alan.ToLower();
+
             var egitmenler = await _context.Egitmenler
                 .Where(e => e.UzmanlikAlanlari != null &&
-                            EF.Functions.Like(e.UzmanlikAlanlari.ToLower(), $"%{alan.ToLower()}%"))
+                            EF.Functions.Like(e.UzmanlikAlanlari.ToLower(), $"%{needle}%"))
                 .Select(e => new
                 {
                     e.Id,
                     e.Ad,
                     e.UzmanlikAlanlari,
                     e.Hizmetler,
-                    e.MusaitlikSaatleri,
+                    Musaitlik = e.MusaitlikBaslangic.ToString("HH:mm") + "-" + e.MusaitlikBitis.ToString("HH:mm"),
                     e.SalonId
                 })
                 .ToListAsync();
@@ -63,28 +61,23 @@ namespace FitHub.Controllers
             return Ok(egitmenler);
         }
 
-        // GET: api/uygun-egitmenler?tarih=2025-12-01T10:00:00&salonId=1
-        // Returns trainers who do NOT have an appointment at the given date/time
         [HttpGet("/api/uygun-egitmenler")]
         public async Task<ActionResult> GetAvailableEgitmenler([FromQuery] DateTime tarih, [FromQuery] int? salonId)
         {
-            // Find all trainers
-            var egitmenlerQuery = _context.Egitmenler.AsQueryable();
+            var date = DateOnly.FromDateTime(tarih);
+            var time = TimeOnly.FromDateTime(tarih);
 
+            var egitmenlerQuery = _context.Egitmenler.AsQueryable();
             if (salonId.HasValue)
                 egitmenlerQuery = egitmenlerQuery.Where(e => e.SalonId == salonId.Value);
 
-            var egitmenler = await egitmenlerQuery.ToListAsync();
-
-            // Find trainer IDs with a non-cancelled appointment at the given date
             var busyEgitmenIds = await _context.Randevular
-                .Where(r => r.Tarih.Date == tarih.Date && r.Durum != "Ýptal")
+                .Where(r => r.Tarih == date && r.Durum != "Ýptal" && r.Baslangic <= time && r.Bitis > time)
                 .Select(r => r.EgitmenId)
                 .Distinct()
                 .ToListAsync();
 
-            // Filter out busy trainers
-            var available = egitmenler
+            var available = await egitmenlerQuery
                 .Where(e => !busyEgitmenIds.Contains(e.Id))
                 .Select(e => new
                 {
@@ -92,10 +85,10 @@ namespace FitHub.Controllers
                     e.Ad,
                     e.UzmanlikAlanlari,
                     e.Hizmetler,
-                    e.MusaitlikSaatleri,
+                    Musaitlik = e.MusaitlikBaslangic.ToString("HH:mm") + "-" + e.MusaitlikBitis.ToString("HH:mm"),
                     e.SalonId
                 })
-                .ToList();
+                .ToListAsync();
 
             return Ok(available);
         }

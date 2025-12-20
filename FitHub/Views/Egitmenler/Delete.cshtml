@@ -4,29 +4,27 @@
 }
 
 <h1 class="mb-4">Eðitmen Sil</h1>
-<div class="alert alert-danger">
-    <strong>Bu eðitmeni silmek istediðinizden emin misiniz?</strong>
-</div>
+
+<div class="alert alert-warning">Bu eðitmeni silmek istediðinize emin misiniz?</div>
+
 <div class="card mb-3">
     <div class="card-body">
         <dl class="row">
-            <dt class="col-sm-3">Id</dt>
-            <dd class="col-sm-9">@Model.Id</dd>
             <dt class="col-sm-3">Ad</dt>
             <dd class="col-sm-9">@Model.Ad</dd>
-            <dt class="col-sm-3">Uzmanlýk Alanlarý</dt>
-            <dd class="col-sm-9">@Model.UzmanlikAlanlari</dd>
-            <dt class="col-sm-3">Hizmetler</dt>
-            <dd class="col-sm-9">@Model.Hizmetler</dd>
-            <dt class="col-sm-3">Müsaitlik Saatleri</dt>
-            <dd class="col-sm-9">@Model.MusaitlikSaatleri</dd>
+
             <dt class="col-sm-3">Salon</dt>
             <dd class="col-sm-9">@Model.Salon?.Ad</dd>
+
+            <dt class="col-sm-3">Müsaitlik</dt>
+            <dd class="col-sm-9">@Model.MusaitlikBaslangic.ToString("HH:mm") - @Model.MusaitlikBitis.ToString("HH:mm")</dd>
         </dl>
-        <form asp-action="Delete" method="post">
-            <input type="hidden" asp-for="Id" />
-            <button type="submit" class="btn btn-danger">Sil</button>
-            <a asp-action="Index" class="btn btn-secondary">Ýptal</a>
-        </form>
     </div>
 </div>
+
+<form asp-action="Delete" method="post">
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="Id" />
+    <button type="submit" class="btn btn-danger">Sil</button>
+    <a asp-action="Index" class="btn btn-secondary">Ýptal</a>
+</form>

@@ -4,33 +4,34 @@
 }
 
 <h1 class="mb-4">Eðitmenler</h1>
-<a asp-action="Create" class="btn btn-primary mb-3">Yeni Eðitmen Ekle</a>
+<a asp-action="Create" class="btn btn-primary mb-3">Yeni Eðitmen</a>
+
 <table class="table table-striped table-bordered">
     <thead class="table-dark">
         <tr>
-            <th>Id</th>
             <th>Ad</th>
-            <th>Uzmanlýk Alanlarý</th>
-            <th>Hizmetler</th>
             <th>Salon</th>
+            <th>Müsaitlik</th>
+            <th>Uzmanlýk</th>
+            <th>Hizmetler</th>
             <th></th>
         </tr>
     </thead>
     <tbody>
-@foreach (var item in Model)
-{
-    <tr>
-        <td>@item.Id</td>
-        <td>@item.Ad</td>
-        <td>@item.UzmanlikAlanlari</td>
-        <td>@item.Hizmetler</td>
-        <td>@item.Salon?.Ad</td>
-        <td>
-            <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-info btn-sm">Detay</a>
-            <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-warning btn-sm">Düzenle</a>
-            <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-danger btn-sm">Sil</a>
-        </td>
-    </tr>
-}
+        @foreach (var e in Model)
+        {
+            <tr>
+                <td>@e.Ad</td>
+                <td>@e.Salon?.Ad</td>
+                <td>@e.MusaitlikBaslangic.ToString("HH:mm") - @e.MusaitlikBitis.ToString("HH:mm")</td>
+                <td>@e.UzmanlikAlanlari</td>
+                <td>@e.Hizmetler</td>
+                <td>
+                    <a asp-action="Details" asp-route-id="@e.Id" class="btn btn-info btn-sm">Detay</a>
+                    <a asp-action="Edit" asp-route-id="@e.Id" class="btn btn-warning btn-sm">Düzenle</a>
+                    <a asp-action="Delete" asp-route-id="@e.Id" class="btn btn-danger btn-sm">Sil</a>
+                </td>
+            </tr>
+        }
     </tbody>
 </table>
