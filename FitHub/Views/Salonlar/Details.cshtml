@@ -1,27 +1,66 @@
 @model FitHub.Models.Salon
+@using Microsoft.AspNetCore.Http
 @{
     ViewData["Title"] = "Salon Detayý";
+    // Admin yetkisi kontrolü
+    var userRole = Context.Session.GetString("UserRole");
+    bool isAdmin = string.Equals(userRole, "Admin", StringComparison.OrdinalIgnoreCase);
 }
 
-<h1 class="mb-4">Salon Detayý</h1>
+<div class="container py-5 d-flex justify-content-center">
+    <div class="card bg-card border-0 shadow-lg w-100" style="max-width: 600px;">
+        <div class="card-header bg-transparent border-bottom border-secondary text-center py-4">
+            <div class="bg-dark border border-warning rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                <i class="fas fa-building fa-3x text-warning"></i>
+            </div>
+            <h2 class="fw-bold text-white mb-0">@Model.Ad</h2>
+            <p class="text-muted small">Þube Bilgileri</p>
+        </div>
 
-<div class="card">
-    <div class="card-body">
-        <dl class="row">
-            <dt class="col-sm-3">Ad</dt>
-            <dd class="col-sm-9">@Model.Ad</dd>
+        <div class="card-body p-4">
+            <div class="row g-4">
+                <div class="col-6 border-end border-secondary text-center">
+                    <label class="text-secondary small text-uppercase fw-bold mb-2">Çalýþma Saatleri</label>
+                    <div class="text-white fs-5">
+                        <i class="far fa-clock text-warning me-2"></i>
+                        @Model.CalismaBaslangic.ToString("HH:mm") - @Model.CalismaBitis.ToString("HH:mm")
+                    </div>
+                </div>
 
-            <dt class="col-sm-3">Çalýþma Saatleri</dt>
-            <dd class="col-sm-9">@Model.CalismaBaslangic.ToString("HH:mm") - @Model.CalismaBitis.ToString("HH:mm")</dd>
+                <div class="col-6 text-center">
+                    <label class="text-secondary small text-uppercase fw-bold mb-2">Kapasite</label>
+                    <div class="text-white fs-5">
+                        <i class="fas fa-users text-info me-2"></i>@Model.Kontenjan Kiþi
+                    </div>
+                </div>
+            </div>
 
-            <dt class="col-sm-3">Kontenjan</dt>
-            <dd class="col-sm-9">@Model.Kontenjan</dd>
+            <hr class="border-secondary opacity-50 my-4" />
 
-            <dt class="col-sm-3">Hizmetler</dt>
-            <dd class="col-sm-9">@Model.Hizmetler</dd>
-        </dl>
+            <div class="alert alert-dark border-secondary d-flex align-items-center" role="alert">
+                <i class="fas fa-info-circle text-warning fs-4 me-3"></i>
+                <div class="small text-muted">
+                    Bu salon için randevu alabilir ve eðitmenlerimizi inceleyebilirsiniz.
+                </div>
+            </div>
+        </div>
 
-        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">Düzenle</a>
-        <a asp-action="Index" class="btn btn-secondary">Geri</a>
+        <div class="card-footer bg-transparent border-top border-secondary p-4 d-flex justify-content-between align-items-center">
+            <a asp-action="Index" class="btn btn-outline-light px-4">
+                <i class="fas fa-arrow-left me-2"></i>Geri Dön
+            </a>
+
+            @if (isAdmin)
+            {
+                    <div class="btn-group">
+                        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-outline-warning">
+                            <i class="fas fa-edit me-2"></i>Düzenle
+                        </a>
+                        <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-outline-danger">
+                            <i class="fas fa-trash-alt me-2"></i>Sil
+                        </a>
+                    </div>
+            }
+        </div>
     </div>
 </div>

@@ -1,27 +1,89 @@
 ﻿@model FitHub.Models.Hizmet
+@using Microsoft.AspNetCore.Http
 @{
     ViewData["Title"] = "Hizmet Detayı";
+    // Admin yetki kontrolü
+    var userRole = Context.Session.GetString("UserRole");
+    bool isAdmin = string.Equals(userRole, "Admin", StringComparison.OrdinalIgnoreCase);
 }
 
-<h1 class="mb-4">Hizmet Detayı</h1>
+<div class="container py-5 d-flex justify-content-center">
+    <div class="card bg-card border-0 shadow-lg w-100" style="max-width: 700px;">
 
-<div class="card">
-    <div class="card-body">
-        <dl class="row">
-            <dt class="col-sm-3">Ad</dt>
-            <dd class="col-sm-9">@Model.Ad</dd>
+        <div class="card-header bg-transparent border-bottom border-secondary text-center py-4">
+            <div class="bg-dark border border-warning rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                <i class="fas fa-dumbbell fa-3x text-warning"></i>
+            </div>
+            <h2 class="fw-bold text-white mb-0">@Model.Ad</h2>
+            <p class="text-muted small">Hizmet Detayları ve Eğitmenler</p>
+        </div>
 
-            <dt class="col-sm-3">Salon</dt>
-            <dd class="col-sm-9">@Model.Salon?.Ad</dd>
+        <div class="card-body p-4">
+            <div class="row g-4 mb-4">
+                <div class="col-md-4 text-center border-end border-secondary">
+                    <label class="text-secondary small text-uppercase fw-bold">Süre</label>
+                    <div class="text-white fs-4"><i class="far fa-clock text-warning me-2"></i>@Model.SureDakika dk</div>
+                </div>
+                <div class="col-md-4 text-center border-end border-secondary">
+                    <label class="text-secondary small text-uppercase fw-bold">Ücret</label>
+                    <div class="text-success fs-4 fw-bold">@Model.Ucret.ToString("C0")</div>
+                </div>
+                <div class="col-md-4 text-center">
+                    <label class="text-secondary small text-uppercase fw-bold">Salon</label>
+                    <div class="text-white fs-5">
+                        <i class="fas fa-map-marker-alt text-danger me-2"></i>@(Model.Salon?.Ad ?? "Merkez")
+                    </div>
+                </div>
+            </div>
 
-            <dt class="col-sm-3">Süre</dt>
-            <dd class="col-sm-9">@Model.SureDakika dk</dd>
+            <hr class="border-secondary opacity-50" />
 
-            <dt class="col-sm-3">Ücret</dt>
-            <dd class="col-sm-9">@Model.Ucret ₺</dd>
-        </dl>
+            <div class="mt-4 text-center">
+                <h5 class="text-white fw-bold mb-3">Bu Dersi Veren Eğitmenler</h5>
 
-        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">Düzenle</a>
-        <a asp-action="Index" class="btn btn-secondary">Geri</a>
+                @if (Model.EgitmenHizmetler != null && Model.EgitmenHizmetler.Any())
+                {
+                        <div class="d-flex flex-wrap justify-content-center gap-2">
+                        @foreach (var eh in Model.EgitmenHizmetler)
+                        {
+                                    <div class="badge bg-dark border border-secondary p-2 px-3 rounded-pill d-flex align-items-center">
+                                        <div class="bg-warning rounded-circle me-2" style="width: 8px; height: 8px;"></div>
+                                        <span class="text-white fs-6">@eh.Egitmen?.Ad</span>
+                                    </div>
+                        }
+                        </div>
+                }
+                else
+                {
+                        <div class="alert alert-dark border-secondary text-muted small">
+                            <i class="fas fa-info-circle me-2"></i>Bu hizmet için henüz eğitmen atanmamış.
+                        </div>
+                }
+            </div>
+        </div>
+
+        <div class="card-footer bg-transparent border-top border-secondary p-4">
+            <div class="d-flex justify-content-between align-items-center">
+                <a asp-action="Index" class="btn btn-outline-light px-4">
+                    <i class="fas fa-arrow-left me-2"></i>Listeye Dön
+                </a>
+
+                <div class="d-flex gap-2">
+                    @if (isAdmin)
+                    {
+                            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-outline-warning">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-outline-danger">
+                                <i class="fas fa-trash-alt"></i>
+                            </a>
+                    }
+
+                    <a asp-controller="Randevular" asp-action="Create" class="btn btn-warning fw-bold text-dark px-4 shadow">
+                        Randevu Al <i class="fas fa-chevron-right ms-2"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
     </div>
 </div>

@@ -1,7 +1,8 @@
-@model FitHub.Models.Egitmen
+@model FitHub.Models.EgitmenFormViewModel
 @{
     ViewData["Title"] = "Eðitmen Düzenle";
 
+    // Saatleri parçalayalým (Controller'dan gelen ViewModel içindeki veriyi kullanýyoruz)
     var baslangicSaat = Model.MusaitlikBaslangic.Hour;
     var baslangicDakika = Model.MusaitlikBaslangic.Minute;
 
@@ -20,6 +21,10 @@
         color: #fff;
         border-color: #ffc107;
         box-shadow: 0 0 0 0.25rem rgba(255, 193, 7, 0.25);
+    }
+    .form-check-input:checked {
+        background-color: #ffc107;
+        border-color: #ffc107;
     }
     option { background-color: #222; }
 </style>
@@ -46,7 +51,7 @@
                             </div>
                             <div class="col-md-6">
                                 <label asp-for="SalonId" class="form-label text-muted small">Çalýþtýðý Salon</label>
-                                <select asp-for="SalonId" class="form-select" asp-items="ViewBag.SalonId"></select>
+                                <select asp-for="SalonId" class="form-select" asp-items="Model.Salonlar"></select>
                             </div>
                         </div>
 
@@ -96,9 +101,30 @@
                             </div>
                         </div>
 
-                        <div class="alert alert-info small bg-dark border-secondary text-muted">
-                            <i class="fas fa-info-circle me-2"></i>Hizmetleri güncellemek için lütfen ilgili menüyü kullanýn.
-                        </div>
+                        @if (Model.Hizmetler != null && Model.Hizmetler.Any())
+                        {
+                                <div class="mb-4">
+                                    <label class="form-label text-muted small d-block">Verebileceði Hizmetler</label>
+                                    <div class="card bg-dark border border-secondary p-3" style="max-height: 200px; overflow-y: auto;">
+                                    @foreach (var h in Model.Hizmetler)
+                                    {
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" name="SelectedHizmetIds" value="@h.Value" id="hizmet_@h.Value" 
+                                            @(h.Selected ? "checked" : "")>
+                                                    <label class="form-check-label text-white" for="hizmet_@h.Value">
+                                                @h.Text
+                                                    </label>
+                                                </div>
+                                    }
+                                    </div>
+                                </div>
+                        }
+                        else
+                        {
+                                <div class="alert alert-warning small border-0 bg-opacity-10 bg-warning text-warning">
+                                    <i class="fas fa-exclamation-triangle me-2"></i>Hizmet listesi boþ veya yüklenemedi.
+                                </div>
+                        }
 
                         <div class="d-flex justify-content-between pt-3 border-top border-secondary">
                             <a asp-action="Index" class="btn btn-outline-light px-4">Listeye Dön</a>

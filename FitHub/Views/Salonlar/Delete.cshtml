@@ -1,22 +1,38 @@
 @model FitHub.Models.Salon
 @{
-    ViewData["Title"] = "Sil";
+    ViewData["Title"] = "Salonu Sil";
 }
 
 <div class="container py-5 d-flex justify-content-center">
-    <div class="card bg-card border-danger shadow-lg text-center" style="max-width: 500px;">
+    <div class="card bg-card border-danger shadow-lg text-center w-100" style="max-width: 500px;">
         <div class="card-body p-5">
             <div class="mb-4">
-                <i class="fas fa-exclamation-triangle fa-4x text-danger mb-3"></i>
-                <h3 class="fw-bold text-white">Bu Kaydý Silmek Ýstiyor musunuz?</h3>
-                <p class="text-muted">"@Model.Ad" silinecek. Bu iþlem geri alýnamaz.</p>
+                <div class="d-inline-flex align-items-center justify-content-center bg-danger bg-opacity-10 rounded-circle mb-3" style="width: 80px; height: 80px;">
+                    <i class="fas fa-exclamation-triangle fa-3x text-danger"></i>
+                </div>
+
+                <h3 class="fw-bold text-white">Salonu Silmek Ýstiyor musunuz?</h3>
+                <p class="text-muted mt-3">
+                    Aþaðýdaki þube kaydý silinecektir. Bu iþlem geri alýnamaz ve bu salona baðlý veriler etkilenebilir.
+                </p>
+
+                <div class="bg-dark rounded p-3 border border-secondary mt-4">
+                    <div class="text-white fw-bold fs-4">
+                        <i class="fas fa-building text-warning me-2"></i>@Model.Ad
+                    </div>
+                    <div class="text-muted small mt-1">
+                        Kapasite: @Model.Kontenjan | Saat: @Model.CalismaBaslangic.ToString("HH:mm")-@Model.CalismaBitis.ToString("HH:mm")
+                    </div>
+                </div>
             </div>
 
             <form asp-action="Delete">
                 <input type="hidden" asp-for="Id" />
                 <div class="d-grid gap-2">
-                    <button type="submit" class="btn btn-danger btn-lg fw-bold">Evet, Sil</button>
-                    <a asp-action="Index" class="btn btn-outline-light">Ýptal, Geri Dön</a>
+                    <button type="submit" class="btn btn-danger btn-lg fw-bold shadow">
+                        <i class="fas fa-trash-alt me-2"></i>Evet, Salonu Sil
+                    </button>
+                    <a asp-action="Index" class="btn btn-outline-light">Vazgeç, Geri Dön</a>
                 </div>
             </form>
         </div>
