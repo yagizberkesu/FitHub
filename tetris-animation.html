@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tetris Animation Loop</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Arial', sans-serif;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .title {
+            color: white;
+            font-size: 32px;
+            font-weight: bold;
+            text-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        }
+
+        #gameBoard {
+            display: grid;
+            grid-template-columns: repeat(10, 1fr);
+            gap: 1px;
+            background-color: #1a1a1a;
+            padding: 10px;
+            border: 3px solid #fff;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), inset 0 0 20px rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+            width: 320px;
+            height: 600px;
+        }
+
+        .cell {
+            width: 30px;
+            height: 30px;
+            background-color: #0a0a0a;
+            border: 0.5px solid #333;
+            border-radius: 2px;
+            transition: background-color 0.15s ease;
+            box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.5);
+        }
+
+        .cell.filled {
+            animation: glow 0.3s ease;
+        }
+
+        .cell.clear {
+            animation: clearAnimation 0.4s ease;
+            background-color: #ffd700;
+            box-shadow: inset 0 0 10px rgba(255, 215, 0, 0.8), 0 0 15px rgba(255, 215, 0, 0.6);
+        }
+
+        @keyframes glow {
+            0% {
+                box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.3);
+            }
+            100% {
+                box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.5);
+            }
+        }
+
+        @keyframes clearAnimation {
+            0% {
+                background-color: #ffd700;
+                transform: scale(1);
+            }
+            50% {
+                box-shadow: 0 0 20px rgba(255, 215, 0, 1);
+            }
+            100% {
+                background-color: #0a0a0a;
+                transform: scale(0.8);
+            }
+        }
+
+        @keyframes fall {
+            0% {
+                transform: translateY(-600px);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .stats {
+            color: white;
+            font-size: 18px;
+            font-weight: bold;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .lines-cleared {
+            color: #ffd700;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="title">🎮 Tetris Animation</div>
+        <div id="gameBoard"></div>
+        <div class="stats">
+            Lines Cleared: <span class="lines-cleared" id="linesCleared">0</span>
+        </div>
+    </div>
+
+    <script>
+        const COLS = 10;
+        const ROWS = 20;
+        const CELL_SIZE = 30;
+
+        // Tetris piece definitions
+        const PIECES = {
+            I: {
+                shape: [[1, 1, 1, 1]],
+                color: '#00f0f0'
+            },
+            O: {
+                shape: [[1, 1], [1, 1]],
+                color: '#f0f000'
+            },
+            T: {
+                shape: [[0, 1, 0], [1, 1, 1]],
+                color: '#a000f0'
+            },
+            S: {
+                shape: [[0, 1, 1], [1, 1, 0]],
+                color: '#00f000'
+            },
+            Z: {
+                shape: [[1, 1, 0], [0, 1, 1]],
+                color: '#f00000'
+            },
+            J: {
+                shape: [[1, 0, 0], [1, 1, 1]],
+                color: '#0000f0'
+            },
+            L: {
+                shape: [[0, 0, 1], [1, 1, 1]],
+                color: '#f0a000'
+            }
+        };
+
+        let board = [];
+        let linesCleared = 0;
+        let isAnimating = false;
+
+        function initBoard() {
+            board = Array(ROWS).fill(null).map(() => Array(COLS).fill(0));
+        }
+
+        function getRandomPiece() {
+            const pieceKeys = Object.keys(PIECES);
+            return PIECES[pieceKeys[Math.floor(Math.random() * pieceKeys.length)]];
+        }
+
+        function renderBoard() {
+            const gameBoard = document.getElementById('gameBoard');
+            gameBoard.innerHTML = '';
+
+            for (let row = 0; row < ROWS; row++) {
+                for (let col = 0; col < COLS; col++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'cell';
+                    if (board[row][col] !== 0) {
+                        cell.style.backgroundColor = board[row][col];
+                        cell.classList.add('filled');
+                    }
+                    gameBoard.appendChild(cell);
+                }
+            }
+        }
+
+        function canPlace(piece, row, col) {
+            for (let r = 0; r < piece.shape.length; r++) {
+                for (let c = 0; c < piece.shape[r].length; c++) {
+                    if (piece.shape[r][c]) {
+                        const newRow = row + r;
+                        const newCol = col + c;
+
+                        if (newCol < 0 || newCol >= COLS || newRow >= ROWS) {
+                            return false;
+                        }
+
+                        if (newRow >= 0 && board[newRow][newCol] !== 0) {
+                            return false;
+                        }
+                    }
+                }
+            }
+            return true;
+        }
+
+        function placePiece(piece, row, col) {
+            for (let r = 0; r < piece.shape.length; r++) {
+                for (let c = 0; c < piece.shape[r].length; c++) {
+                    if (piece.shape[r][c]) {
+                        const newRow = row + r;
+                        const newCol = col + c;
+                        if (newRow >= 0) {
+                            board[newRow][newCol] = piece.color;
+                        }
+                    }
+                }
+            }
+        }
+
+        async function clearLines() {
+            let linesToClear = [];
+
+            for (let row = 0; row < ROWS; row++) {
+                if (board[row].every(cell => cell !== 0)) {
+                    linesToClear.push(row);
+                }
+            }
+
+            if (linesToClear.length > 0) {
+                // Animate clearing
+                for (let row of linesToClear) {
+                    for (let col = 0; col < COLS; col++) {
+                        board[row][col] = '#ffd700';
+                    }
+                }
+                renderBoard();
+
+                await new Promise(resolve => setTimeout(resolve, 400));
+
+                // Remove cleared lines
+                for (let i = linesToClear.length - 1; i >= 0; i--) {
+                    board.splice(linesToClear[i], 1);
+                }
+
+                // Add empty lines at top
+                while (board.length < ROWS) {
+                    board.unshift(Array(COLS).fill(0));
+                }
+
+                linesCleared += linesToClear.length;
+                document.getElementById('linesCleared').textContent = linesCleared;
+            }
+
+            renderBoard();
+        }
+
+        async function dropPiece(piece) {
+            const startCol = Math.floor((COLS - piece.shape[0].length) / 2);
+            let row = -piece.shape.length;
+
+            while (canPlace(piece, row + 1, startCol)) {
+                row++;
+                renderBoard();
+                await new Promise(resolve => setTimeout(resolve, 50));
+            }
+
+            placePiece(piece, row, startCol);
+            renderBoard();
+            await clearLines();
+        }
+
+        async function gameLoop() {
+            isAnimating = true;
+
+            while (true) {
+                const piece = getRandomPiece();
+                await dropPiece(piece);
+
+                // Small delay between pieces
+                await new Promise(resolve => setTimeout(resolve, 300));
+
+                // Reset board after a certain number of clears for infinite loop
+                if (linesCleared > 0 && Math.random() > 0.7) {
+                    // Randomly reset for variety
+                    initBoard();
+                    linesCleared = 0;
+                    document.getElementById('linesCleared').textContent = '0';
+                    renderBoard();
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                }
+            }
+        }
+
+        // Initialize and start
+        initBoard();
+        renderBoard();
+        gameLoop();
+    </script>
+</body>
+</html>
